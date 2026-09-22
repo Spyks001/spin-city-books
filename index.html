@@ -124,17 +124,16 @@ function resetExpense(){$("expenseId").value="";$("expenseDescription").value=""
 
 async function start(s){
  session=s;
- const inviteToken=localStorage.getItem("sc_staff_invite");
- if(inviteToken){
-   const ir=await sb.rpc("redeem_staff_invite",{p_token:inviteToken});
-   if(!ir.error){localStorage.removeItem("sc_staff_invite");toast("Staff invite accepted. Access granted.");}
-   else if(/invalid|expired|already been used|different email/i.test(ir.error.message||"")){localStorage.removeItem("sc_staff_invite");toast(ir.error.message)}
- }
-
  $("sync").textContent="Checking access…";
  let p=await sb.from("profiles").select("*").eq("id",s.user.id).single();
  if(p.error){await sb.auth.signOut({scope:"local"});$("authMsg").textContent=p.error.message;return}
  profile=p.data;
+ const inviteToken=localStorage.getItem("sc_staff_invite");
+ if(inviteToken && profile.role!=="owner"){
+   const ir=await sb.rpc("redeem_staff_invite",{p_token:inviteToken});
+   if(!ir.error){localStorage.removeItem("sc_staff_invite");profile.access_enabled=true;profile.role="staff";toast("Staff invite accepted. Access granted.");}
+   else if(/invalid|expired|already been used|different email/i.test(ir.error.message||"")){localStorage.removeItem("sc_staff_invite");toast(ir.error.message)}
+ }
  if(!profile.role||profile.role==="staff"){
    const b=await sb.rpc("bootstrap_owner");
    if(b.data===true){profile.role="owner";profile.access_enabled=true;toast("This account is now the business owner.");}
