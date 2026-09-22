@@ -109,9 +109,9 @@ function resetExpense(){$("expenseId").value="";$("expenseDescription").value=""
 
 async function start(s){
  session=s;
- $("#sync").textContent="Checking access…";
+ $("sync").textContent="Checking access…";
  let p=await sb.from("profiles").select("*").eq("id",s.user.id).single();
- if(p.error){await sb.auth.signOut({scope:"local"});$("#authMsg").textContent=p.error.message;return}
+ if(p.error){await sb.auth.signOut({scope:"local"});$("authMsg").textContent=p.error.message;return}
  profile=p.data;
  if(!profile.role||profile.role==="staff"){
    const b=await sb.rpc("bootstrap_owner");
@@ -119,16 +119,16 @@ async function start(s){
  }
  if(profile.access_enabled!==true){
    await sb.auth.signOut({scope:"local"});
-   $("#authMsg").textContent="Your account is waiting for owner approval. The owner must grant access before you can enter Spin City Books.";
+   $("authMsg").textContent="Your account is waiting for owner approval. The owner must grant access before you can enter Spin City Books.";
    showLogin();
    return;
  }
- $("#loginView").classList.add("hidden");$("#appView").classList.remove("hidden");$("#appHeader").classList.remove("hidden");
- $("#sync").textContent="Syncing…";
- $("#role").textContent=profile.role.toUpperCase();
- $("#teamTab").classList.toggle("hidden",!isOwner());
- $("#ownerSettings").classList.toggle("hidden",!isOwner());
- setDates();renderSettings();await loadData();subscribe();await touchPresence();startPresenceHeartbeat();await refreshActiveCount();$("#sync").textContent="Synced";$("#sync").className="status ok";
+ $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("appHeader").classList.remove("hidden");
+ $("sync").textContent="Syncing…";
+ $("role").textContent=profile.role.toUpperCase();
+ $("teamTab").classList.toggle("hidden",!isOwner());
+ $("ownerSettings").classList.toggle("hidden",!isOwner());
+ setDates();renderSettings();await loadData();subscribe();await touchPresence();startPresenceHeartbeat();await refreshActiveCount();$("sync").textContent="Synced";$("sync").className="status ok";
  await importLegacy();
 }
 async function loadData(){
@@ -175,24 +175,24 @@ window.setAccess=async(id,enabled)=>{if(!isOwner())return;if(!confirm(enabled?"R
 
 function renderSettings(){
  const name=profile?.full_name||"Profile";
- $("#settingsName").textContent=name;
- $("#settingsEmail").textContent=profile?.email||session?.user?.email||"";
- const box=$("#avatarBox");
+ $("settingsName").textContent=name;
+ $("settingsEmail").textContent=profile?.email||session?.user?.email||"";
+ const box=$("avatarBox");
  if(profile?.avatar_url){box.innerHTML=`<img class="avatar" alt="Profile photo" src="${esc(profile.avatar_url)}">`;box.classList.remove("avatar-fallback")}
  else {box.textContent=(name.trim().split(/\s+/).map(x=>x[0]).join("").slice(0,2)||"SC").toUpperCase();box.classList.add("avatar-fallback")}
 }
 async function uploadAvatar(){
- const file=$("#avatarFile").files?.[0];
+ const file=$("avatarFile").files?.[0];
  if(!file)return toast("Choose a profile photo first.");
  if(file.size>3*1024*1024)return toast("Please choose an image under 3 MB.");
  const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
  const path=`${session.user.id}/profile-${Date.now()}.${ext}`;
- $("#uploadAvatar").disabled=true;$("#uploadAvatar").textContent="Uploading…";
+ $("uploadAvatar").disabled=true;$("uploadAvatar").textContent="Uploading…";
  const up=await sb.storage.from("profile-photos").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
- if(up.error){$("#uploadAvatar").disabled=false;$("#uploadAvatar").textContent="Save profile photo";return toast(up.error.message)}
+ if(up.error){$("uploadAvatar").disabled=false;$("uploadAvatar").textContent="Save profile photo";return toast(up.error.message)}
  const pub=sb.storage.from("profile-photos").getPublicUrl(path);
  const r=await sb.rpc("set_my_avatar",{p_avatar_url:pub.data.publicUrl});
- $("#uploadAvatar").disabled=false;$("#uploadAvatar").textContent="Save profile photo";
+ $("uploadAvatar").disabled=false;$("uploadAvatar").textContent="Save profile photo";
  if(r.error)return toast(r.error.message);
  profile.avatar_url=pub.data.publicUrl;renderSettings();toast("Profile photo updated");
 }
@@ -203,8 +203,8 @@ async function touchPresence(){
 }
 function startPresenceHeartbeat(){stopPresenceHeartbeat();presenceTimer=setInterval(touchPresence,60000);countTimer=setInterval(refreshActiveCount,60000)}
 function stopPresenceHeartbeat(){if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}if(countTimer){clearInterval(countTimer);countTimer=null}}
-async function refreshActiveCount(){if(!session||profile?.access_enabled!==true)return;const r=await sb.rpc("active_user_count");if(!r.error)$("#activeCount").textContent=String(r.data??0)}
-$("#uploadAvatar").onclick=uploadAvatar;
+async function refreshActiveCount(){if(!session||profile?.access_enabled!==true)return;const r=await sb.rpc("active_user_count");if(!r.error)$("activeCount").textContent=String(r.data??0)}
+$("uploadAvatar").onclick=uploadAvatar;
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
