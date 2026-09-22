@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spin City Laundry Services — Books</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#182033;--muted:#667085;--line:#e4e7ec;--brand:#4f46e5;--brand2:#4338ca;--danger:#dc2626;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#3730a3,#4f46e5);color:#fff;padding:22px 18px;position:sticky;top:0;z-index:5}
+.head{max-width:1150px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand h1{margin:0;font-size:22px}.brand p{margin:4px 0 0;opacity:.85;font-size:13px}
+.wrap{max-width:1150px;margin:0 auto;padding:18px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.nav button,.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}.nav button.active,.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn.small{padding:7px 10px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #1018280a}.metric .label{color:var(--muted);font-size:13px}.metric .value{font-size:25px;font-weight:800;margin-top:5px}
+form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{width:100%;margin-top:6px;border:1px solid #d0d5dd;border-radius:9px;padding:10px;background:#fff;color:var(--text);font:inherit}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:700}.status{font-size:12px}.status.ok{color:#dcfce7}.status.bad{color:#fee2e2}.toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:20}.login{max-width:440px;margin:8vh auto}.hidden{display:none!important}.actions{display:flex;gap:6px;flex-wrap:wrap}.section{margin-bottom:16px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}@media(max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:12px}th:nth-child(3),td:nth-child(3){display:none}}
+</style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#4f46e5"><link rel="apple-touch-icon" href="icons/icon.svg"></head>
+<body>
+<header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row"><span id="sync" class="status">Connecting…</span><span id="role" class="pill"></span><button class="btn small" id="logout">Log out</button></div></div></header>
+
+<main class="wrap">
+<section id="loginView" class="login card">
+<h2>Spin City Books</h2><p class="muted">Sign in to sync your books across devices.</p>
+<div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div>
+<form id="authForm"><label>Email<input id="email" type="email" required autocomplete="email"></label><label>Password<input id="password" type="password" minlength="6" required autocomplete="current-password"></label><label id="nameWrap" class="hidden">Full name<input id="fullName" type="text"></label><button class="btn primary" id="authBtn">Sign in</button></form>
+<p id="authMsg" class="muted"></p><small class="muted">The first account can claim Owner access. Later accounts start as Staff.</small>
+</section>
+
+<section id="appView" class="hidden">
+<nav class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="orders">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="team" id="teamTab" class="hidden">Team</button></nav>
+<div id="dashboard" class="tab">
+<div class="grid section"><div class="card metric"><div class="label">Total revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Orders logged</div><div class="value" id="ordersCount">0</div></div></div>
+<div class="card"><div class="row"><h3>Monthly breakdown</h3><button class="btn small" id="refresh">Refresh</button></div><div id="months" class="muted">No records yet.</div></div>
+</div>
+
+<div id="orders" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="orderFormTitle">Add order</h3><form id="orderForm"><input type="hidden" id="orderId"><label>Customer name<input id="customerName" required></label><label>Customer phone<input id="customerPhone" inputmode="tel"></label><label>Service<input id="service" required placeholder="Wash & fold"></label><label>Amount charged<input id="orderAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="orderDate" type="date" required></label><div class="actions"><button class="btn primary">Save order</button><button type="button" class="btn hidden" id="cancelOrder">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Orders</h3><input id="orderSearch" placeholder="Search customer/service" style="max-width:240px"></div><div id="ordersList"></div></div></div></div>
+
+<div id="expenses" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="expenseFormTitle">Add expense</h3><form id="expenseForm"><input type="hidden" id="expenseId"><label>Category<select id="expenseCategory"><option>Rent</option><option>Utilities</option><option>Detergent & supplies</option><option>Wages</option><option>Equipment & maintenance</option><option>Transport</option><option>Other</option></select></label><label>Description<input id="expenseDescription"></label><label>Amount<input id="expenseAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="expenseDate" type="date" required></label><div class="actions"><button class="btn primary">Save expense</button><button type="button" class="btn hidden" id="cancelExpense">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Expenses</h3><input id="expenseSearch" placeholder="Search category/description" style="max-width:240px"></div><div id="expensesList"></div></div></div></div>
+
+<div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team</h3><p class="muted">Create accounts using the same app, then change their role here.</p></div></div><div id="teamList"></div></div></div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+const SUPABASE_URL="https://nzqdusocwgsmhprdwfgy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_qwjC5XqmJWLxaW8DbMt6Cw_yXFe_2JW";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
+let session=null, profile=null, orders=[], expenses=[], channel=null, signup=false;
+
+function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function setDates(){if(!$("orderDate").value)$("orderDate").value=today();if(!$("expenseDate").value)$("expenseDate").value=today()}
+function isOwner(){return profile?.role==="owner"}
+
+$("loginMode").onclick=()=>{signup=false;$("loginMode").classList.add("active");$("signupMode").classList.remove("active");$("nameWrap").classList.add("hidden");$("authBtn").textContent="Sign in";$("password").autocomplete="current-password"}
+$("signupMode").onclick=()=>{signup=true;$("signupMode").classList.add("active");$("loginMode").classList.remove("active");$("nameWrap").classList.remove("hidden");$("authBtn").textContent="Create account";$("password").autocomplete="new-password"}
+
+$("authForm").onsubmit=async e=>{
+ e.preventDefault();$("authMsg").textContent="Working…";
+ const email=$("email").value.trim(), password=$("password").value, name=$("fullName").value.trim();
+ const r=signup?await sb.auth.signUp({email,password,options:{data:{full_name:name}}}):await sb.auth.signInWithPassword({email,password});
+ if(r.error){$("authMsg").textContent=r.error.message;return}
+ $("authMsg").textContent=signup&&!r.data.session?"Check your email to confirm your account.":"";
+ if(r.data.session) await start(r.data.session);
+}
+
+$("logout").onclick=async()=>{await sb.auth.signOut();location.reload()}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.tab==="team")loadTeam()})
+$("refresh").onclick=loadData;
+$("orderSearch").oninput=renderOrders;$("expenseSearch").oninput=renderExpenses;
+
+$("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
+ const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
+ if(!row.customer_name||!row.service||row.amount<0||!row.order_date)return toast("Please check the order fields.");
+ let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id});
+ const r=await q;if(r.error)return toast(r.error.message);toast(id?"Order updated":"Order saved");resetOrder();await loadData();
+}
+$("expenseForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
+ const id=$("expenseId").value;const row={category:$("expenseCategory").value,description:$("expenseDescription").value.trim(),amount:Number($("expenseAmount").value),expense_date:$("expenseDate").value};
+ if(row.amount<0||!row.expense_date)return toast("Please check the expense fields.");
+ let q=id?sb.from("expenses").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("expenses").insert({...row,created_by:session.user.id});
+ const r=await q;if(r.error)return toast(r.error.message);toast(id?"Expense updated":"Expense saved");resetExpense();await loadData();
+}
+$("cancelOrder").onclick=resetOrder;$("cancelExpense").onclick=resetExpense;
+function resetOrder(){$("orderId").value="";$("customerName").value="";$("customerPhone").value="";$("service").value="";$("orderAmount").value="";$("orderFormTitle").textContent="Add order";$("cancelOrder").classList.add("hidden");setDates()}
+function resetExpense(){$("expenseId").value="";$("expenseDescription").value="";$("expenseAmount").value="";$("expenseFormTitle").textContent="Add expense";$("cancelExpense").classList.add("hidden");setDates()}
+
+async function start(s){
+ session=s;$("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("appHeader").classList.remove("hidden");
+ $("sync").textContent="Syncing…";
+ let p=await sb.from("profiles").select("*").eq("id",s.user.id).single();
+ if(p.error){toast(p.error.message);return}
+ profile=p.data;
+ if(!profile.role||profile.role==="staff"){
+   const b=await sb.rpc("bootstrap_owner");
+   if(b.data===true){profile.role="owner";toast("This account is now the business owner.");}
+ }
+ $("role").textContent=profile.role.toUpperCase();
+ $("teamTab").classList.toggle("hidden",!isOwner());
+ setDates();await loadData();subscribe();$("sync").textContent="Synced";$("sync").className="status ok";
+ await importLegacy();
+}
+async function loadData(){
+ const [o,e]=await Promise.all([
+  sb.from("orders").select("*").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
+  sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false})
+ ]);
+ if(o.error||e.error){toast((o.error||e.error).message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
+ orders=o.data||[];expenses=e.data||[];renderAll();
+}
+function renderAll(){renderDashboard();renderOrders();renderExpenses()}
+function renderDashboard(){
+ const rev=orders.reduce((a,x)=>a+Number(x.amount),0), exp=expenses.reduce((a,x)=>a+Number(x.amount),0);
+ $("revenue").textContent=money(rev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(rev-exp);$("ordersCount").textContent=orders.length;
+ const m={};orders.forEach(x=>{const k=x.order_date.slice(0,7);m[k]??={r:0,e:0};m[k].r+=Number(x.amount)});expenses.forEach(x=>{const k=x.expense_date.slice(0,7);m[k]??={r:0,e:0};m[k].e+=Number(x.amount)});
+ const keys=Object.keys(m).sort().reverse();$("months").innerHTML=keys.length?`<table><thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${keys.map(k=>`<tr><td>${esc(k)}</td><td>${money(m[k].r)}</td><td>${money(m[k].e)}</td><td>${money(m[k].r-m[k].e)}</td></tr>`).join("")}</tbody></table>`:"No records yet.";
+}
+function renderOrders(){
+ const q=$("orderSearch").value.toLowerCase();const a=orders.filter(x=>`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
+ $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
+}
+function renderExpenses(){
+ const q=$("expenseSearch").value.toLowerCase();const a=expenses.filter(x=>`${x.category} ${x.description||""}`.toLowerCase().includes(q));
+ $("expensesList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category)}</td><td>${esc(x.description||"")}</td><td>${money(x.amount)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editExpense('${x.id}')">Edit</button><button class="btn small danger" onclick="delExpense('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No expenses found.</p>";
+}
+window.editOrder=id=>{const x=orders.find(v=>v.id===id);if(!x)return;$("orderId").value=x.id;$("customerName").value=x.customer_name;$("customerPhone").value=x.customer_phone||"";$("service").value=x.service;$("orderAmount").value=x.amount;$("orderDate").value=x.order_date;$("orderFormTitle").textContent="Edit order";$("cancelOrder").classList.remove("hidden");document.querySelector('[data-tab="orders"]').click()}
+window.editExpense=id=>{const x=expenses.find(v=>v.id===id);if(!x)return;$("expenseId").value=x.id;$("expenseCategory").value=x.category;$("expenseDescription").value=x.description||"";$("expenseAmount").value=x.amount;$("expenseDate").value=x.expense_date;$("expenseFormTitle").textContent="Edit expense";$("cancelExpense").classList.remove("hidden");document.querySelector('[data-tab="expenses"]').click()}
+window.delOrder=async id=>{if(!isOwner()||!confirm("Delete this order permanently?"))return;const r=await sb.from("orders").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Order deleted");await loadData()}}
+window.delExpense=async id=>{if(!isOwner()||!confirm("Delete this expense permanently?"))return;const r=await sb.from("expenses").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Expense deleted");await loadData()}}
+async function loadTeam(){if(!isOwner())return;const r=await sb.from("profiles").select("id,email,full_name,role,created_at").order("created_at");if(r.error){toast(r.error.message);return}
+ $("teamList").innerHTML=r.data.map(x=>`<div class="row" style="padding:12px 0;border-bottom:1px solid var(--line)"><div><b>${esc(x.full_name||"Unnamed")}</b><div class="muted">${esc(x.email||"")}</div></div><div class="actions"><span class="pill">${esc(x.role)}</span>${x.id!==session.user.id?`<button class="btn small" onclick="toggleRole('${x.id}','${x.role}')">${x.role==="owner"?"Make staff":"Make owner"}</button>`:""}</div></div>`).join("")||"<p class='muted'>No team members yet.</p>";
+}
+window.toggleRole=async(id,current)=>{if(!isOwner())return;if(!confirm(`Change this user's role from ${current}?`))return;const role=current==="owner"?"staff":"owner";const r=await sb.from("profiles").update({role}).eq("id",id);if(r.error)toast(r.error.message);else{toast("Role updated");loadTeam()}}
+
+function subscribe(){
+ if(channel)sb.removeChannel(channel);
+ channel=sb.channel("spin-city-books").on("postgres_changes",{event:"*",schema:"public",table:"orders"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"expenses"},loadData).subscribe();
+}
+async function importLegacy(){
+ if(localStorage.getItem("sc_cloud_import_done"))return;
+ const lo=JSON.parse(localStorage.getItem("sc_orders_v1")||"[]"),le=JSON.parse(localStorage.getItem("sc_expenses_v1")||"[]");
+ if(!lo.length&&!le.length)return;
+ if(!confirm(`Found ${lo.length} old local order(s) and ${le.length} old local expense(s). Import them to the cloud now?`))return;
+ const o=lo.map(x=>({customer_name:x.customer,customer_phone:x.phone||"",service:x.service,amount:Number(x.amount),order_date:x.date,created_by:session.user.id}));
+ const e=le.map(x=>({category:x.category,description:x.description||"",amount:Number(x.amount),expense_date:x.date,created_by:session.user.id}));
+ if(o.length){const r=await sb.from("orders").insert(o);if(r.error)return toast("Order import failed: "+r.error.message)}
+ if(e.length){const r=await sb.from("expenses").insert(e);if(r.error)return toast("Expense import failed: "+r.error.message)}
+ localStorage.setItem("sc_cloud_import_done","1");toast("Local records imported to cloud");await loadData();
+}
+sb.auth.getSession().then(({data})=>data.session&&start(data.session));
+sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_IN"&&s&&!session)start(s)});
+setDates();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js");</script>
+</body></html>
