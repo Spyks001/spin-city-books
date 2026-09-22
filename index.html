@@ -36,7 +36,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <div class="grid section">
   <div class="card metric"><div class="label">M-PESA received</div><div class="value" id="mpesaTotal">KSh 0.00</div></div>
   <div class="card metric"><div class="label">Payments recorded</div><div class="value" id="mpesaCount">0</div></div>
-  <div class="card" style="grid-column:span 2"><h3 style="margin-top:0">Automatic Till recording</h3><p class="settings-note">Payments received on Till <b>1637376</b> will appear here after the Daraja C2B callback is connected. M-PESA receipts are kept separate from order revenue until they are matched to an order.</p></div>
+  <div class="card" style="grid-column:span 2"><h3 style="margin-top:0">Automatic Till recording</h3><p class="settings-note">Real payments received on Till <b>1637376</b> will appear here after the production Daraja C2B connection is active. Sandbox/test transactions are excluded from the books.</p></div>
 </div>
 <div class="card">
   <div class="row"><h3>M-PESA payments</h3><input id="mpesaSearch" placeholder="Search receipt, phone or reference" style="max-width:280px"></div>
@@ -82,7 +82,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <div id="ownerSettings" class="card owner-panel hidden">
   <div class="row"><div><h3 style="margin:0 0 5px">Owner control centre</h3><p class="settings-note">Owner access includes user approvals, roles, access controls and all business data.</p></div><button class="btn primary" onclick="document.querySelector('[data-tab=team]').click()">Manage team & approvals</button></div>
   <div class="row" style="margin-top:14px;padding-top:14px;border-top:1px solid #bfdbfe">
-    <div><h4 style="margin:0 0 4px">M-PESA Till</h4><p class="settings-note">Till <b>1637376</b>. Register the Daraja C2B validation and confirmation callbacks after the Daraja credentials are stored in Supabase secrets.</p></div>
+    <div><h4 style="margin:0 0 4px">M-PESA Till</h4><p class="settings-note">Real Till <b>1637376</b>. Production Daraja credentials must be configured before real payments are recorded.</p></div>
     <button class="btn primary" id="registerMpesa">Connect M-PESA</button>
   </div>
   <p id="mpesaSetupMsg" class="settings-note" style="margin:10px 0 0"></p>
@@ -191,9 +191,9 @@ function renderDashboard(){
 }
 function renderMpesaPayments(){
  const q=($("mpesaSearch")?.value||"").toLowerCase();
- const a=mpesaPayments.filter(x=>`${x.transaction_id||""} ${x.phone_number||""} ${x.bill_ref_number||""} ${x.first_name||""} ${x.last_name||""}`.toLowerCase().includes(q));
- const total=mpesaPayments.reduce((sum,x)=>sum+Number(x.amount||0),0);
- $("mpesaTotal").textContent=money(total);$("mpesaCount").textContent=String(mpesaPayments.length);
+ const realPayments=mpesaPayments.filter(x=>x.is_test!==true); const a=realPayments.filter(x=>`${x.transaction_id||""} ${x.phone_number||""} ${x.bill_ref_number||""} ${x.first_name||""} ${x.last_name||""}`.toLowerCase().includes(q));
+ const total=realPayments.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ $("mpesaTotal").textContent=money(total);$("mpesaCount").textContent=String(realPayments.length);
  $("mpesaList").innerHTML=a.length?`<table><thead><tr><th>Time</th><th>Receipt</th><th>Customer</th><th>Phone</th><th>Reference</th><th>Amount</th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.trans_time?new Date(x.trans_time).toLocaleString("en-KE"):"")}</td><td><b>${esc(x.transaction_id)}</b></td><td>${esc([x.first_name,x.middle_name,x.last_name].filter(Boolean).join(" "))}</td><td>${esc(x.phone_number||"")}</td><td>${esc(x.bill_ref_number||x.invoice_number||"")}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No M-PESA payments found.</p>";
 }
 function renderOrders(){
@@ -301,7 +301,7 @@ $("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
    $("mpesaSetupMsg").textContent=detail;
    toast("M-PESA connection failed");
  }
- else{$("mpesaSetupMsg").textContent="Daraja C2B callbacks registered successfully. Environment: "+(r.data?.environment||"sandbox")+".";toast("M-PESA connected");}
+ else{$("mpesaSetupMsg").textContent="Daraja C2B callbacks registered successfully. Environment: "+(r.data?.environment||"production")+".";toast("M-PESA connected");}
  $("registerMpesa").disabled=false;$("registerMpesa").textContent="Connect M-PESA";
 };
 
