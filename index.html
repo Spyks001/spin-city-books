@@ -32,7 +32,22 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 
 <div id="expenses" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="expenseFormTitle">Add expense</h3><form id="expenseForm"><input type="hidden" id="expenseId"><label>Category<select id="expenseCategory"><option>Rent</option><option>Utilities</option><option>Detergent & supplies</option><option>Wages</option><option>Equipment & maintenance</option><option>Transport</option><option>Other</option></select></label><label>Description<input id="expenseDescription"></label><label>Amount<input id="expenseAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="expenseDate" type="date" required></label><div class="actions"><button class="btn primary">Save expense</button><button type="button" class="btn hidden" id="cancelExpense">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Expenses</h3><input id="expenseSearch" placeholder="Search category/description" style="max-width:240px"></div><div id="expensesList"></div></div></div></div>
 
-<div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team & access</h3><p class="muted">Only the business owner can control who can use the site. Removing access keeps the person's historical records but prevents them from signing in.</p></div></div><div id="teamList"></div></div></div>
+<div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team & access</h3><p class="muted">Only the business owner can control who can use the site. Removing access keeps the person's historical records but prevents them from signing in.</p></div></div>
+<div class="card owner-panel" style="margin:12px 0">
+  <h3 style="margin-top:0">Invite a staff member</h3>
+  <p class="settings-note">Generate a private, single-use link for a specific email address. The link expires after the selected period.</p>
+  <div class="grid2">
+    <label>Staff email<input id="inviteEmail" type="email" placeholder="staff@example.com"></label>
+    <label>Expires after<select id="inviteDays"><option value="1">1 day</option><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+  </div>
+  <div class="actions" style="margin-top:10px"><button class="btn primary" id="generateInvite">Generate invite link</button></div>
+  <div id="inviteResult" class="hidden" style="margin-top:12px">
+    <label>Invite link<input id="inviteLink" readonly></label>
+    <div class="actions" style="margin-top:8px"><button class="btn small primary" id="copyInvite">Copy link</button><button class="btn small" id="openInvite">Open link</button></div>
+    <p id="inviteExpiry" class="settings-note"></p>
+  </div>
+</div>
+<div id="teamList"></div></div></div>
 <div id="settings" class="tab hidden">
 <div class="settings-grid section">
   <div class="card">
@@ -109,6 +124,13 @@ function resetExpense(){$("expenseId").value="";$("expenseDescription").value=""
 
 async function start(s){
  session=s;
+ const inviteToken=localStorage.getItem("sc_staff_invite");
+ if(inviteToken){
+   const ir=await sb.rpc("redeem_staff_invite",{p_token:inviteToken});
+   if(!ir.error){localStorage.removeItem("sc_staff_invite");toast("Staff invite accepted. Access granted.");}
+   else if(/invalid|expired|already been used|different email/i.test(ir.error.message||"")){localStorage.removeItem("sc_staff_invite");toast(ir.error.message)}
+ }
+
  $("sync").textContent="Checking access…";
  let p=await sb.from("profiles").select("*").eq("id",s.user.id).single();
  if(p.error){await sb.auth.signOut({scope:"local"});$("authMsg").textContent=p.error.message;return}
@@ -172,6 +194,23 @@ async function loadTeam(){
 }
 window.toggleRole=async(id,current)=>{if(!isOwner())return;if(!confirm(`Change this user's role from ${current}?`))return;const role=current==="owner"?"staff":"owner";const r=await sb.from("profiles").update({role}).eq("id",id);if(r.error)toast(r.error.message);else{toast("Role updated");loadTeam()}}
 window.setAccess=async(id,enabled)=>{if(!isOwner())return;if(!confirm(enabled?"Restore this user's access?":"Remove this user's access? Their existing business records will remain."))return;const r=await sb.functions.invoke("owner-user-access",{body:{action:"set_access",user_id:id,enabled}});if(r.error){toast(r.error.message);return}toast(enabled?"Access granted":"Access removed");loadTeam();refreshActiveCount()}
+async function generateInvite(){
+  if(!isOwner())return;
+  const email=$("inviteEmail").value.trim().toLowerCase(), days=Number($("inviteDays").value||7);
+  if(!email)return toast("Enter the staff member's email.");
+  const r=await sb.rpc("create_staff_invite",{p_email:email,p_days:days});
+  if(r.error)return toast(r.error.message);
+  const token=r.data?.token;
+  if(!token)return toast("Could not create the invite.");
+  const link=location.origin+location.pathname+"?invite="+encodeURIComponent(token);
+  $("inviteLink").value=link;$("inviteResult").classList.remove("hidden");
+  $("inviteExpiry").textContent="Invite for "+email+" expires "+new Date(r.data.expires_at).toLocaleString();
+  toast("Invite link created");
+}
+$("generateInvite").onclick=generateInvite;
+$("copyInvite").onclick=async()=>{try{await navigator.clipboard.writeText($("inviteLink").value);toast("Invite link copied")}catch(e){$("inviteLink").select();document.execCommand("copy");toast("Invite link copied")}};
+$("openInvite").onclick=()=>window.open($("inviteLink").value,"_blank","noopener");
+
 
 function renderSettings(){
  const name=profile?.full_name||"Profile";
@@ -221,6 +260,8 @@ async function importLegacy(){
  if(e.length){const r=await sb.from("expenses").insert(e);if(r.error)return toast("Expense import failed: "+r.error.message)}
  localStorage.setItem("sc_cloud_import_done","1");toast("Local records imported to cloud");await loadData();
 }
+const inviteFromUrl=new URLSearchParams(location.search).get("invite");
+if(inviteFromUrl){localStorage.setItem("sc_staff_invite",inviteFromUrl);showSignup();$("authMsg").textContent="Staff invite detected. Create or sign in with the invited email address.";const inviteEmailToken=localStorage.getItem("sc_staff_invite");}
 sb.auth.getSession().then(({data})=>data.session&&start(data.session));
 sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_IN"&&s&&!session)start(s)});
 setDates();
