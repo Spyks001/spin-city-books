@@ -22,7 +22,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <section id="loginView"><div class="login-stage"><div class="login-left"><img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp"><h2>Welcome to <span>Spin City Books</span></h2><p class="lead"><b>Smart Bookkeeping for Your Laundry Business</b><br>Track income and expenses, manage your customers, and keep your business running smoothly — all in one place.</p><div class="features"><div class="feature"><div class="ico">▥</div><b>Track Finances</b><span>Record income, expenses and profits.</span></div><div class="feature"><div class="ico">♟</div><b>Manage Customers</b><span>Keep customer records and history.</span></div><div class="feature"><div class="ico">▤</div><b>View Reports</b><span>Get clear insights with simple reports.</span></div><div class="feature"><div class="ico">☁</div><b>Access Anywhere</b><span>Use on any device, anytime.</span></div></div><div class="slogan">Clean Clothes &nbsp;•&nbsp; Happy Customers &nbsp;•&nbsp; Better Business</div></div><div class="login-overlay"><h2>🔒 &nbsp;Log In to Your Account</h2><p>Access your business records and manage your team.</p><div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div><form id="authForm" class="auth-form"><label><input class="auth-input" id="email" type="email" placeholder="Email address" required autocomplete="email"></label><label><input class="auth-input" id="password" type="password" minlength="6" placeholder="Password" required autocomplete="current-password"></label><label id="nameWrap" class="hidden"><input class="auth-input" id="fullName" type="text" placeholder="Full name"></label><div class="login-links"><span>☐ Remember me</span><a id="forgot">Forgot password?</a></div><button class="btn primary login-main-btn" id="authBtn">Log in →</button></form><div id="inviteSetup" class="invite-setup hidden"><h3>🎉 Finish your staff account</h3><p class="note">Your invitation has already verified this email. Set your password and name below — you will go straight into Spin City Books after this.</p><label>Email<input class="auth-input" id="inviteSetupEmail" type="email" readonly></label><label>Full name<input class="auth-input" id="inviteFullName" type="text" placeholder="Your full name" autocomplete="name" required></label><label>New password<input class="auth-input" id="invitePassword" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" required></label><label>Confirm password<input class="auth-input" id="invitePassword2" type="password" minlength="6" placeholder="Repeat your password" autocomplete="new-password" required></label><button class="btn primary login-main-btn" id="finishInvite">Finish sign-up →</button><p id="inviteSetupMsg"></p></div><div id="signupExtras"><div class="signup-divider">New to Spin City Books?</div><button class="btn signup-btn" id="createAccountBtn">Create Account</button></div><p id="authMsg"></p><div class="secure">🔒 Secure · Encrypted · Your Data, Your Control</div></div></div></section>
 
 <section id="appView" class="hidden">
-<nav class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="orders">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
+<nav class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="orders">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
 <div class="grid section"><div class="card metric"><div class="label">Total revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Orders logged</div><div class="value" id="ordersCount">0</div></div></div>
 <div class="card"><div class="row"><h3>Monthly breakdown</h3><button class="btn small" id="refresh">Refresh</button></div><div id="months" class="muted">No records yet.</div></div>
@@ -31,6 +31,18 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <div id="orders" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="orderFormTitle">Add order</h3><form id="orderForm"><input type="hidden" id="orderId"><label>Customer name<input id="customerName" required></label><label>Customer phone<input id="customerPhone" inputmode="tel"></label><label>Service<input id="service" required placeholder="Wash & fold"></label><label>Amount charged<input id="orderAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="orderDate" type="date" required></label><div class="actions"><button class="btn primary">Save order</button><button type="button" class="btn hidden" id="cancelOrder">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Orders</h3><input id="orderSearch" placeholder="Search customer/service" style="max-width:240px"></div><div id="ordersList"></div></div></div></div>
 
 <div id="expenses" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="expenseFormTitle">Add expense</h3><form id="expenseForm"><input type="hidden" id="expenseId"><label>Category<select id="expenseCategory"><option>Rent</option><option>Utilities</option><option>Detergent & supplies</option><option>Wages</option><option>Equipment & maintenance</option><option>Transport</option><option>Other</option></select></label><label>Description<input id="expenseDescription"></label><label>Amount<input id="expenseAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="expenseDate" type="date" required></label><div class="actions"><button class="btn primary">Save expense</button><button type="button" class="btn hidden" id="cancelExpense">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Expenses</h3><input id="expenseSearch" placeholder="Search category/description" style="max-width:240px"></div><div id="expensesList"></div></div></div></div>
+
+<div id="mpesa" class="tab hidden">
+<div class="grid section">
+  <div class="card metric"><div class="label">M-PESA received</div><div class="value" id="mpesaTotal">KSh 0.00</div></div>
+  <div class="card metric"><div class="label">Payments recorded</div><div class="value" id="mpesaCount">0</div></div>
+  <div class="card" style="grid-column:span 2"><h3 style="margin-top:0">Automatic Till recording</h3><p class="settings-note">Payments received on Till <b>1637376</b> will appear here after the Daraja C2B callback is connected. M-PESA receipts are kept separate from order revenue until they are matched to an order.</p></div>
+</div>
+<div class="card">
+  <div class="row"><h3>M-PESA payments</h3><input id="mpesaSearch" placeholder="Search receipt, phone or reference" style="max-width:280px"></div>
+  <div id="mpesaList"><p class="muted">No M-PESA payments recorded yet.</p></div>
+</div>
+</div>
 
 <div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team & access</h3><p class="muted">Only the business owner can control who can use the site. Removing access keeps the person's historical records but prevents them from signing in.</p></div></div>
 <div class="card owner-panel" style="margin:12px 0">
@@ -82,7 +94,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
-let session=null, profile=null, orders=[], expenses=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false;
+let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false;
 
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -102,9 +114,9 @@ $("authForm").onsubmit=async e=>{
 }
 
 $("logout").onclick=async()=>{stopPresenceHeartbeat();await sb.auth.signOut({scope:"local"});location.reload()}
-document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.tab==="team")loadTeam();if(b.dataset.tab==="settings"){renderSettings();refreshActiveCount()}})
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.tab==="team")loadTeam();if(b.dataset.tab==="mpesa")renderMpesaPayments();if(b.dataset.tab==="settings"){renderSettings();refreshActiveCount()}})
 $("refresh").onclick=loadData;
-$("orderSearch").oninput=renderOrders;$("expenseSearch").oninput=renderExpenses;
+$("orderSearch").oninput=renderOrders;$("expenseSearch").oninput=renderExpenses;$("mpesaSearch").oninput=renderMpesaPayments;
 
 $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
@@ -162,12 +174,19 @@ async function loadData(){
  if(o.error||e.error){toast((o.error||e.error).message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
  orders=o.data||[];expenses=e.data||[];renderAll();
 }
-function renderAll(){renderDashboard();renderOrders();renderExpenses()}
+function renderAll(){renderDashboard();renderOrders();renderExpenses();renderMpesaPayments()}
 function renderDashboard(){
  const rev=orders.reduce((a,x)=>a+Number(x.amount),0), exp=expenses.reduce((a,x)=>a+Number(x.amount),0);
  $("revenue").textContent=money(rev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(rev-exp);$("ordersCount").textContent=orders.length;
  const m={};orders.forEach(x=>{const k=x.order_date.slice(0,7);m[k]??={r:0,e:0};m[k].r+=Number(x.amount)});expenses.forEach(x=>{const k=x.expense_date.slice(0,7);m[k]??={r:0,e:0};m[k].e+=Number(x.amount)});
  const keys=Object.keys(m).sort().reverse();$("months").innerHTML=keys.length?`<table><thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${keys.map(k=>`<tr><td>${esc(k)}</td><td>${money(m[k].r)}</td><td>${money(m[k].e)}</td><td>${money(m[k].r-m[k].e)}</td></tr>`).join("")}</tbody></table>`:"No records yet.";
+}
+function renderMpesaPayments(){
+ const q=($("mpesaSearch")?.value||"").toLowerCase();
+ const a=mpesaPayments.filter(x=>`${x.transaction_id||""} ${x.phone_number||""} ${x.bill_ref_number||""} ${x.first_name||""} ${x.last_name||""}`.toLowerCase().includes(q));
+ const total=mpesaPayments.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ $("mpesaTotal").textContent=money(total);$("mpesaCount").textContent=String(mpesaPayments.length);
+ $("mpesaList").innerHTML=a.length?`<table><thead><tr><th>Time</th><th>Receipt</th><th>Customer</th><th>Phone</th><th>Reference</th><th>Amount</th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.trans_time?new Date(x.trans_time).toLocaleString("en-KE"):"")}</td><td><b>${esc(x.transaction_id)}</b></td><td>${esc([x.first_name,x.middle_name,x.last_name].filter(Boolean).join(" "))}</td><td>${esc(x.phone_number||"")}</td><td>${esc(x.bill_ref_number||x.invoice_number||"")}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No M-PESA payments found.</p>";
 }
 function renderOrders(){
  const q=$("orderSearch").value.toLowerCase();const a=orders.filter(x=>`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
@@ -264,7 +283,7 @@ $("uploadAvatar").onclick=uploadAvatar;
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
- channel=sb.channel("spin-city-books").on("postgres_changes",{event:"*",schema:"public",table:"orders"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"expenses"},loadData).subscribe();
+ channel=sb.channel("spin-city-books").on("postgres_changes",{event:"*",schema:"public",table:"orders"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"expenses"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"mpesa_payments"},loadData).subscribe();
 }
 async function importLegacy(){
  if(localStorage.getItem("sc_cloud_import_done"))return;
