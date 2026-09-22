@@ -172,12 +172,15 @@ async function start(s){
  await importLegacy();
 }
 async function loadData(){
- const [o,e]=await Promise.all([
+ const [o,e,m]=await Promise.all([
   sb.from("orders").select("*").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
-  sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false})
+  sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
+  sb.from("mpesa_payments").select("*").order("received_at",{ascending:false}).limit(500)
  ]);
- if(o.error||e.error){toast((o.error||e.error).message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
- orders=o.data||[];expenses=e.data||[];renderAll();
+ const err=o.error||e.error||m.error;
+ if(err){toast(err.message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
+ orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];renderAll();
+ $("sync").textContent="Cloud synced";$("sync").className="status ok";
 }
 function renderAll(){renderDashboard();renderOrders();renderExpenses();renderMpesaPayments()}
 function renderDashboard(){
