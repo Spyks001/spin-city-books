@@ -289,8 +289,12 @@ $("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
  $("registerMpesa").disabled=true;$("registerMpesa").textContent="Connecting…";$("mpesaSetupMsg").textContent="";
  const r=await sb.functions.invoke("mpesa-register",{body:{}});
  if(r.error){
-   let detail=r.data?.error||r.error.message||"Could not connect M-PESA.";
-   try{const body=r.error?.context&&await r.error.context.clone().json();detail=body?.error?body.error+(body.detail?": "+body.detail:""):detail}catch(_){ }
+   let detail=r.data?.detail||r.data?.error||r.error.message||"Could not connect M-PESA.";
+   try{
+     const body=r.error?.context&&await r.error.context.clone().json();
+     if(body?.detail)detail=body.detail;
+     else if(body?.error)detail=body.error;
+   }catch(_){ }
    $("mpesaSetupMsg").textContent=detail;
    toast("M-PESA connection failed");
  }
