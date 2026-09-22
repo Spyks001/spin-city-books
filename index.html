@@ -183,16 +183,16 @@ window.delExpense=async id=>{if(!isOwner()||!confirm("Delete this expense perman
 async function loadTeam(){
  if(!isOwner())return;
  $("teamList").innerHTML="<p class='muted'>Loading users…</p>";
- const r=await sb.functions.invoke("owner-user-access",{body:{action:"list"}});
+ const r=await sb.from("profiles").select("id,email,full_name,role,created_at,access_enabled,avatar_url").order("created_at",{ascending:true});
  if(r.error){$("teamList").innerHTML="<p class='muted'>Could not load users: "+esc(r.error.message)+"</p>";return}
- const users=r.data?.users||[];
+ const users=r.data||[];
  $("teamList").innerHTML=users.map(x=>{
    const active=x.access_enabled===true, self=x.id===session.user.id;
-   return `<div class="row team-user"><div><b>${esc(x.full_name||"Unnamed")}</b><div class="muted">${esc(x.email||"")}</div><div class="muted">Created ${esc((x.created_at||"").slice(0,10))}</div></div><div class="actions"><span class="pill ${active?"approved":"pending"}">${active?"Approved":"Pending approval"}</span><span class="pill">${esc(x.role)}</span>${x.confirmed?"":"<span class='pill pending'>Email not confirmed</span>"}${!self?`<button class="btn small" onclick="toggleRole('${x.id}','${x.role}')">${x.role==="owner"?"Make staff":"Make owner"}</button><button class="btn small ${active?"danger":"primary"}" onclick="setAccess('${x.id}',${active?"false":"true"})">${active?"Remove access":"Restore access"}</button>`:""}</div></div>`;
+   return `<div class="row team-user"><div><b>${esc(x.full_name||"Unnamed")}</b><div class="muted">${esc(x.email||"")}</div><div class="muted">Created ${esc((x.created_at||"").slice(0,10))}</div></div><div class="actions"><span class="pill ${active?"approved":"pending"}">${active?"Approved":"Pending approval"}</span><span class="pill">${esc(x.role)}</span>${!self?`<button class="btn small" onclick="toggleRole('${x.id}','${x.role}')">${x.role==="owner"?"Make staff":"Make owner"}</button><button class="btn small ${active?"danger":"primary"}" onclick="setAccess('${x.id}',${active?"false":"true"})">${active?"Remove access":"Restore access"}</button>`:""}</div></div>`;
  }).join("")||"<p class='muted'>No users found.</p>";
 }
 window.toggleRole=async(id,current)=>{if(!isOwner())return;if(!confirm(`Change this user's role from ${current}?`))return;const role=current==="owner"?"staff":"owner";const r=await sb.from("profiles").update({role}).eq("id",id);if(r.error)toast(r.error.message);else{toast("Role updated");loadTeam()}}
-window.setAccess=async(id,enabled)=>{if(!isOwner())return;if(!confirm(enabled?"Restore this user's access?":"Remove this user's access? Their existing business records will remain."))return;const r=await sb.functions.invoke("owner-user-access",{body:{action:"set_access",user_id:id,enabled}});if(r.error){toast(r.error.message);return}toast(enabled?"Access granted":"Access removed");loadTeam();refreshActiveCount()}
+window.setAccess=async(id,enabled)=>{if(!isOwner())return;if(!confirm(enabled?"Restore this user's access?":"Remove this user's access? Their existing business records will remain."))return;const r=await sb.rpc("set_staff_access",{p_user_id:id,p_enabled:enabled});if(r.error){toast(r.error.message);return}toast(enabled?"Access granted":"Access removed");loadTeam();refreshActiveCount()}
 async function generateInvite(){
   if(!isOwner())return;
   const email=$("inviteEmail").value.trim().toLowerCase(), days=Number($("inviteDays").value||7);
