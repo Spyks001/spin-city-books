@@ -5,24 +5,44 @@
 <title>Spin City Laundry Services — Books</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--text:#182033;--muted:#667085;--line:#e4e7ec;--brand:#4f46e5;--brand2:#4338ca;--danger:#dc2626;--ok:#15803d}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
-header{background:linear-gradient(135deg,#3730a3,#4f46e5);color:#fff;padding:22px 18px;position:sticky;top:0;z-index:5}
-.head{max-width:1150px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand h1{margin:0;font-size:22px}.brand p{margin:4px 0 0;opacity:.85;font-size:13px}
+:root{--bg:#f4f8fc;--card:#fff;--text:#102a56;--muted:#536b8f;--line:#dce7f5;--brand:#087ff5;--brand2:#0758b8;--danger:#dc2626;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(180deg,#f8fbff,#eef6ff);color:var(--text)}
+header{background:linear-gradient(135deg,#063d92,#087ff5);color:#fff;padding:18px;position:sticky;top:0;z-index:5}
+.head{max-width:1150px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand h1{margin:0;font-size:22px}.brand p{margin:4px 0 0;opacity:.88;font-size:13px}
 .wrap{max-width:1150px;margin:0 auto;padding:18px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.nav button,.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}.nav button.active,.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn.small{padding:7px 10px;font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #1018280a}.metric .label{color:var(--muted);font-size:13px}.metric .value{font-size:25px;font-weight:800;margin-top:5px}
-form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{width:100%;margin-top:6px;border:1px solid #d0d5dd;border-radius:9px;padding:10px;background:#fff;color:var(--text);font:inherit}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:700}.status{font-size:12px}.status.ok{color:#dcfce7}.status.bad{color:#fee2e2}.toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:20}.login{max-width:440px;margin:8vh auto}.hidden{display:none!important}.actions{display:flex;gap:6px;flex-wrap:wrap}.section{margin-bottom:16px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}@media(max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:12px}th:nth-child(3),td:nth-child(3){display:none}}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #0b3a6b12}.metric .label{color:var(--muted);font-size:13px}.metric .value{font-size:25px;font-weight:800;margin-top:5px}
+form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{width:100%;margin-top:6px;border:1px solid #cbd8e8;border-radius:9px;padding:10px;background:#fff;color:var(--text);font:inherit}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#eaf3ff;color:#0758b8;font-size:11px;font-weight:700}.status{font-size:12px}.status.ok{color:#dcfce7}.status.bad{color:#fee2e2}.toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:20}.hidden{display:none!important}.actions{display:flex;gap:6px;flex-wrap:wrap}.section{margin-bottom:16px}
+.login-shell{min-height:calc(100vh - 36px);display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;padding:30px 0}.login-hero{padding:18px 20px 28px;position:relative;overflow:hidden}.login-hero:before{content:"";position:absolute;left:-120px;top:-80px;width:300px;height:300px;border-radius:50%;border:26px solid #0a4ea822;border-right-color:transparent;transform:rotate(-25deg)}.login-logo{display:block;width:min(250px,70%);max-height:170px;object-fit:contain;object-position:left center;margin:0 0 18px;border-radius:12px}.login-hero h2{font-size:44px;line-height:1.03;margin:10px 0;color:#102a56}.login-hero h2 span{color:#087ff5}.login-hero .lead{font-size:18px;line-height:1.6;color:#3e5d86;max-width:600px}.features{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}.feature{text-align:center}.feature .ico{width:48px;height:48px;margin:0 auto 8px;border-radius:14px;background:#e7f2ff;display:grid;place-items:center;color:#087ff5;font-size:22px;font-weight:900}.feature b{display:block;font-size:13px}.feature span{display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}.slogan{margin-top:25px;padding:13px 18px;background:linear-gradient(90deg,#0758b8,#087ff5);color:#fff;border-radius:999px;text-align:center;font-weight:700;letter-spacing:.2px}.login-card{max-width:520px;margin:0 auto;width:100%;padding:28px;border-radius:22px;box-shadow:0 16px 45px #0b3a6b1a}.login-card .login-logo{width:230px;max-height:125px;margin:0 auto 10px;object-position:center}.login-card h2{text-align:center;font-size:30px;margin:8px 0}.login-card>p{text-align:center}.login-card .nav{justify-content:center;margin-top:22px}.login-card .nav button{background:#f7fbff}.login-card .nav button.active{background:var(--brand);color:#fff}.secure{text-align:center;font-size:12px;color:#61799b;margin-top:12px}.team-user{padding:13px 0;border-bottom:1px solid var(--line)}.access-on{background:#e8f8ef;color:#18794e}.access-off{background:#fff0f0;color:#b42318}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.login-shell{grid-template-columns:1fr;padding:10px 0 30px}.login-hero{text-align:center}.login-logo{margin-left:auto;margin-right:auto;object-position:center}.login-hero h2{font-size:36px}.login-hero .lead{margin-left:auto;margin-right:auto}.features{grid-template-columns:repeat(2,1fr)}.slogan{border-radius:16px}}@media(max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:12px}th:nth-child(3),td:nth-child(3){display:none}.login-shell{gap:10px}.login-card{padding:20px}.login-hero h2{font-size:32px}}
 </style>
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#4f46e5"><link rel="apple-touch-icon" href="icons/icon.svg"></head>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#087ff5"><link rel="apple-touch-icon" href="icons/icon.svg"></head>
 <body>
 <header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row"><span id="sync" class="status">Connecting…</span><span id="role" class="pill"></span><button class="btn small" id="logout">Log out</button></div></div></header>
 
 <main class="wrap">
-<section id="loginView" class="login card">
-<h2>Spin City Books</h2><p class="muted">Sign in to sync your books across devices.</p>
+<section id="loginView">
+<div class="login-shell">
+<div class="login-hero">
+<img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp">
+<h2>Welcome to <span>Spin City Books</span></h2>
+<p class="lead"><b>Smart bookkeeping for your laundry business.</b><br>Track income and expenses, manage customer records, and keep your business running smoothly — all in one place.</p>
+<div class="features">
+<div class="feature"><div class="ico">▥</div><b>Track Finances</b><span>Record income, expenses and profits.</span></div>
+<div class="feature"><div class="ico">♟</div><b>Manage Customers</b><span>Keep customer records and history.</span></div>
+<div class="feature"><div class="ico">▤</div><b>View Reports</b><span>Get clear insights with simple reports.</span></div>
+<div class="feature"><div class="ico">☁</div><b>Access Anywhere</b><span>Use on any device, anytime.</span></div>
+</div>
+<div class="slogan">Clean Clothes &nbsp;•&nbsp; Happy Customers &nbsp;•&nbsp; Better Business</div>
+</div>
+
+<div class="login-card card">
+<img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp">
+<h2>Login to Your Account</h2><p class="muted">Access your business records securely.</p>
 <div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div>
-<form id="authForm"><label>Email<input id="email" type="email" required autocomplete="email"></label><label>Password<input id="password" type="password" minlength="6" required autocomplete="current-password"></label><label id="nameWrap" class="hidden">Full name<input id="fullName" type="text"></label><button class="btn primary" id="authBtn">Sign in</button></form>
-<p id="authMsg" class="muted"></p><small class="muted">The first account can claim Owner access. Later accounts start as Staff.</small>
+<form id="authForm"><label>Email<input id="email" type="email" required autocomplete="email"></label><label>Password<input id="password" type="password" minlength="6" required autocomplete="current-password"></label><label id="nameWrap" class="hidden">Full name<input id="fullName" type="text"></label><button class="btn primary" id="authBtn">Log in →</button></form>
+<p id="authMsg" class="muted"></p><div class="secure">🔒 Secure · Encrypted · Your Data, Your Control</div>
+</div>
+</div>
 </section>
 
 <section id="appView" class="hidden">
@@ -36,7 +56,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 
 <div id="expenses" class="tab hidden"><div class="grid2 section"><div class="card"><h3 id="expenseFormTitle">Add expense</h3><form id="expenseForm"><input type="hidden" id="expenseId"><label>Category<select id="expenseCategory"><option>Rent</option><option>Utilities</option><option>Detergent & supplies</option><option>Wages</option><option>Equipment & maintenance</option><option>Transport</option><option>Other</option></select></label><label>Description<input id="expenseDescription"></label><label>Amount<input id="expenseAmount" type="number" min="0" step="0.01" required></label><label>Date<input id="expenseDate" type="date" required></label><div class="actions"><button class="btn primary">Save expense</button><button type="button" class="btn hidden" id="cancelExpense">Cancel edit</button></div></form></div><div class="card"><div class="row"><h3>Expenses</h3><input id="expenseSearch" placeholder="Search category/description" style="max-width:240px"></div><div id="expensesList"></div></div></div></div>
 
-<div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team</h3><p class="muted">Create accounts using the same app, then change their role here.</p></div></div><div id="teamList"></div></div></div>
+<div id="team" class="tab hidden"><div class="card"><div class="row"><div><h3>Team & access</h3><p class="muted">Only the business owner can control who can use the site. Removing access keeps the person's historical records but prevents them from signing in.</p></div></div><div id="teamList"></div></div></div>
 </section>
 </main>
 <div id="toast" class="toast"></div>
@@ -55,7 +75,7 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function setDates(){if(!$("orderDate").value)$("orderDate").value=today();if(!$("expenseDate").value)$("expenseDate").value=today()}
 function isOwner(){return profile?.role==="owner"}
 
-$("loginMode").onclick=()=>{signup=false;$("loginMode").classList.add("active");$("signupMode").classList.remove("active");$("nameWrap").classList.add("hidden");$("authBtn").textContent="Sign in";$("password").autocomplete="current-password"}
+$("loginMode").onclick=()=>{signup=false;$("loginMode").classList.add("active");$("signupMode").classList.remove("active");$("nameWrap").classList.add("hidden");$("authBtn").textContent="Log in →";$("password").autocomplete="current-password"}
 $("signupMode").onclick=()=>{signup=true;$("signupMode").classList.add("active");$("loginMode").classList.remove("active");$("nameWrap").classList.remove("hidden");$("authBtn").textContent="Create account";$("password").autocomplete="new-password"}
 
 $("authForm").onsubmit=async e=>{
@@ -130,10 +150,20 @@ window.editOrder=id=>{const x=orders.find(v=>v.id===id);if(!x)return;$("orderId"
 window.editExpense=id=>{const x=expenses.find(v=>v.id===id);if(!x)return;$("expenseId").value=x.id;$("expenseCategory").value=x.category;$("expenseDescription").value=x.description||"";$("expenseAmount").value=x.amount;$("expenseDate").value=x.expense_date;$("expenseFormTitle").textContent="Edit expense";$("cancelExpense").classList.remove("hidden");document.querySelector('[data-tab="expenses"]').click()}
 window.delOrder=async id=>{if(!isOwner()||!confirm("Delete this order permanently?"))return;const r=await sb.from("orders").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Order deleted");await loadData()}}
 window.delExpense=async id=>{if(!isOwner()||!confirm("Delete this expense permanently?"))return;const r=await sb.from("expenses").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Expense deleted");await loadData()}}
-async function loadTeam(){if(!isOwner())return;const r=await sb.from("profiles").select("id,email,full_name,role,created_at").order("created_at");if(r.error){toast(r.error.message);return}
- $("teamList").innerHTML=r.data.map(x=>`<div class="row" style="padding:12px 0;border-bottom:1px solid var(--line)"><div><b>${esc(x.full_name||"Unnamed")}</b><div class="muted">${esc(x.email||"")}</div></div><div class="actions"><span class="pill">${esc(x.role)}</span>${x.id!==session.user.id?`<button class="btn small" onclick="toggleRole('${x.id}','${x.role}')">${x.role==="owner"?"Make staff":"Make owner"}</button>`:""}</div></div>`).join("")||"<p class='muted'>No team members yet.</p>";
+
+async function loadTeam(){
+ if(!isOwner())return;
+ $("teamList").innerHTML="<p class='muted'>Loading users…</p>";
+ const r=await sb.functions.invoke("owner-user-access",{body:{action:"list"}});
+ if(r.error){$("teamList").innerHTML="<p class='muted'>Could not load users: "+esc(r.error.message)+"</p>";return}
+ const users=r.data?.users||[];
+ $("teamList").innerHTML=users.map(x=>{
+   const active=!x.banned_until, self=x.id===session.user.id;
+   return `<div class="row team-user"><div><b>${esc(x.full_name||"Unnamed")}</b><div class="muted">${esc(x.email||"")}</div><div class="muted">Created ${esc((x.created_at||"").slice(0,10))}</div></div><div class="actions"><span class="pill ${active?"access-on":"access-off"}">${active?"Active":"Access removed"}</span><span class="pill">${esc(x.role)}</span>${!self?`<button class="btn small" onclick="toggleRole('${x.id}','${x.role}')">${x.role==="owner"?"Make staff":"Make owner"}</button><button class="btn small ${active?"danger":"primary"}" onclick="setAccess('${x.id}',${active?"false":"true"})">${active?"Remove access":"Restore access"}</button>`:""}</div></div>`;
+ }).join("")||"<p class='muted'>No users found.</p>";
 }
 window.toggleRole=async(id,current)=>{if(!isOwner())return;if(!confirm(`Change this user's role from ${current}?`))return;const role=current==="owner"?"staff":"owner";const r=await sb.from("profiles").update({role}).eq("id",id);if(r.error)toast(r.error.message);else{toast("Role updated");loadTeam()}}
+window.setAccess=async(id,enabled)=>{if(!isOwner())return;if(!confirm(enabled?"Restore this user's access?":"Remove this user's access? Their existing business records will remain."))return;const r=await sb.functions.invoke("owner-user-access",{body:{action:"set_access",user_id:id,enabled}});if(r.error){toast(r.error.message);return}toast(enabled?"User access restored":"User access removed");loadTeam()}
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
