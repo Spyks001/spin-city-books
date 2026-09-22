@@ -81,6 +81,11 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 </div>
 <div id="ownerSettings" class="card owner-panel hidden">
   <div class="row"><div><h3 style="margin:0 0 5px">Owner control centre</h3><p class="settings-note">Owner access includes user approvals, roles, access controls and all business data.</p></div><button class="btn primary" onclick="document.querySelector('[data-tab=team]').click()">Manage team & approvals</button></div>
+  <div class="row" style="margin-top:14px;padding-top:14px;border-top:1px solid #bfdbfe">
+    <div><h4 style="margin:0 0 4px">M-PESA Till</h4><p class="settings-note">Till <b>1637376</b>. Register the Daraja C2B validation and confirmation callbacks after the Daraja credentials are stored in Supabase secrets.</p></div>
+    <button class="btn primary" id="registerMpesa">Connect M-PESA</button>
+  </div>
+  <p id="mpesaSetupMsg" class="settings-note" style="margin:10px 0 0"></p>
 </div>
 </div>
 </section>
@@ -279,7 +284,15 @@ $("finishInvite").onclick=async()=>{
   toast("Staff account ready");
   await start((await sb.auth.getSession()).data.session);
 };
-$("uploadAvatar").onclick=uploadAvatar;
+$("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
+ if(!isOwner())return;
+ $("registerMpesa").disabled=true;$("registerMpesa").textContent="Connecting…";$("mpesaSetupMsg").textContent="";
+ const r=await sb.functions.invoke("mpesa-register",{body:{}});
+ if(r.error){$("mpesaSetupMsg").textContent=r.data?.error||r.error.message||"Could not connect M-PESA.";toast("M-PESA connection failed");}
+ else{$("mpesaSetupMsg").textContent="Daraja C2B callbacks registered successfully. Environment: "+(r.data?.environment||"sandbox")+".";toast("M-PESA connected");}
+ $("registerMpesa").disabled=false;$("registerMpesa").textContent="Connect M-PESA";
+};
+
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
