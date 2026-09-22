@@ -86,7 +86,7 @@ $("authForm").onsubmit=async e=>{
  if(r.data.session) await start(r.data.session);
 }
 
-$("logout").onclick=async()=>{await sb.auth.signOut();location.reload()}
+$("logout").onclick=async()=>{stopPresenceHeartbeat();await sb.auth.signOut({scope:"local"});location.reload()}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.tab==="team")loadTeam();if(b.dataset.tab==="settings"){renderSettings();refreshActiveCount()}})
 $("refresh").onclick=loadData;
 $("orderSearch").oninput=renderOrders;$("expenseSearch").oninput=renderExpenses;
@@ -117,7 +117,7 @@ async function start(s){
    const b=await sb.rpc("bootstrap_owner");
    if(b.data===true){profile.role="owner";profile.access_enabled=true;toast("This account is now the business owner.");}
  }
- if(profile.access_enabled!==true){
+ if(profile.access_enabled!==true && profile.role!=="owner"){
    await sb.auth.signOut({scope:"local"});
    $("authMsg").textContent="Your account is waiting for owner approval. The owner must grant access before you can enter Spin City Books.";
    showLogin();
