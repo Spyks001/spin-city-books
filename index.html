@@ -288,7 +288,12 @@ $("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
  if(!isOwner())return;
  $("registerMpesa").disabled=true;$("registerMpesa").textContent="Connecting…";$("mpesaSetupMsg").textContent="";
  const r=await sb.functions.invoke("mpesa-register",{body:{}});
- if(r.error){$("mpesaSetupMsg").textContent=r.data?.error||r.error.message||"Could not connect M-PESA.";toast("M-PESA connection failed");}
+ if(r.error){
+   let detail=r.data?.error||r.error.message||"Could not connect M-PESA.";
+   try{const body=r.error?.context&&await r.error.context.clone().json();detail=body?.error?body.error+(body.detail?": "+body.detail:""):detail}catch(_){ }
+   $("mpesaSetupMsg").textContent=detail;
+   toast("M-PESA connection failed");
+ }
  else{$("mpesaSetupMsg").textContent="Daraja C2B callbacks registered successfully. Environment: "+(r.data?.environment||"sandbox")+".";toast("M-PESA connected");}
  $("registerMpesa").disabled=false;$("registerMpesa").textContent="Connect M-PESA";
 };
