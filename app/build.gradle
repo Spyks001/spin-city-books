@@ -1,0 +1,26 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.spincitylaundry.books'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.spincitylaundry.books'
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (project.hasProperty('RELEASE_STORE_FILE')) {
+                signingConfig signingConfigs.create('release')
+                signingConfigs.release.storeFile = file(project.property('RELEASE_STORE_FILE'))
+                signingConfigs.release.storePassword = project.property('RELEASE_STORE_PASSWORD')
+                signingConfigs.release.keyAlias = project.property('RELEASE_KEY_ALIAS')
+                signingConfigs.release.keyPassword = project.property('RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
+}
