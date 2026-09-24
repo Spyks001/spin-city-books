@@ -23,6 +23,17 @@ jobs:
       - uses: actions/checkout@v6
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+      - name: Add Spin City branding to app pages
+        run: python - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          marker = '<script src="branding.js"></script>'
+          if marker not in text:
+              text = text.replace('</body>', marker + '</body>')
+              path.write_text(text, encoding='utf-8')
+          print('Spin City branding injected into index.html')
+          PY
       - uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
