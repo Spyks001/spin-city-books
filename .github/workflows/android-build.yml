@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  GRADLE_VERSION: '9.6.0'
+  GRADLE_VERSION: '9.6.1'
 
 jobs:
   build:
@@ -44,6 +44,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
+          gradle --version
           gradle assembleDebug
           if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > upload-key.jks
