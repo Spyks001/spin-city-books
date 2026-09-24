@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
@@ -16,9 +17,11 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
     private static final String START_URL = "https://spyks001.github.io/spin-city-books/";
+    private static final String SPLASH_URL = "file:///android_asset/spin-city-splash.html";
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
+    private final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +33,7 @@ public class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(false);
+        settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
@@ -71,7 +74,10 @@ public class MainActivity extends Activity {
         });
 
         setContentView(webView);
-        webView.loadUrl(START_URL);
+        webView.loadUrl(SPLASH_URL);
+        handler.postDelayed(() -> {
+            if (!isFinishing() && webView != null) webView.loadUrl(START_URL);
+        }, 1800);
     }
 
     @Override
@@ -95,6 +101,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         if (webView != null) {
             webView.stopLoading();
             webView.destroy();
