@@ -1,13 +1,13 @@
 {
-  "name":"Spin City Books",
-  "short_name":"Spin City Books",
-  "description":"Cloud bookkeeping for Spin City Laundry Services.",
+  "name":"spincity",
+  "short_name":"spincity",
+  "description":"Spin City Laundry Services bookkeeping app.",
   "start_url":"./",
   "scope":"./",
   "display":"standalone",
   "background_color":"#f8fafc",
-  "theme_color":"#4f46e5",
+  "theme_color":"#087ff5",
   "icons":[
-    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {"src":"assets/spin-city-logo.webp","sizes":"512x512","type":"image/webp","purpose":"any"}
   ]
 }
