@@ -22,7 +22,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <section id="loginView"><div class="login-stage"><div class="login-left"><img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp"><h2>Welcome to <span>Spin City Books</span></h2><p class="lead"><b>Smart Bookkeeping for Your Laundry Business</b><br>Track income and expenses, manage your customers, and keep your business running smoothly — all in one place.</p><div class="features"><div class="feature"><div class="ico">▥</div><b>Track Finances</b><span>Record income, expenses and profits.</span></div><div class="feature"><div class="ico">♟</div><b>Manage Customers</b><span>Keep customer records and history.</span></div><div class="feature"><div class="ico">▤</div><b>View Reports</b><span>Get clear insights with simple reports.</span></div><div class="feature"><div class="ico">☁</div><b>Access Anywhere</b><span>Use on any device, anytime.</span></div></div><div class="slogan">Clean Clothes &nbsp;•&nbsp; Happy Customers &nbsp;•&nbsp; Better Business</div></div><div class="login-overlay"><h2>🔒 &nbsp;Log In to Your Account</h2><p>Access your business records and manage your team.</p><div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div><form id="authForm" class="auth-form"><label><input class="auth-input" id="email" type="email" placeholder="Email address" required autocomplete="email"></label><label><input class="auth-input" id="password" type="password" minlength="6" placeholder="Password" required autocomplete="current-password"></label><label id="nameWrap" class="hidden"><input class="auth-input" id="fullName" type="text" placeholder="Full name"></label><div class="login-links"><span>☐ Remember me</span><a id="forgot">Forgot password?</a></div><button class="btn primary login-main-btn" id="authBtn">Log in →</button></form><div id="inviteSetup" class="invite-setup hidden"><h3>🎉 Finish your staff account</h3><p class="note">Your invitation has already verified this email. Set your password and name below — you will go straight into Spin City Books after this.</p><label>Email<input class="auth-input" id="inviteSetupEmail" type="email" readonly></label><label>Full name<input class="auth-input" id="inviteFullName" type="text" placeholder="Your full name" autocomplete="name" required></label><label>New password<input class="auth-input" id="invitePassword" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" required></label><label>Confirm password<input class="auth-input" id="invitePassword2" type="password" minlength="6" placeholder="Repeat your password" autocomplete="new-password" required></label><button class="btn primary login-main-btn" id="finishInvite">Finish sign-up →</button><p id="inviteSetupMsg"></p></div><div id="signupExtras"><div class="signup-divider">New to Spin City Books?</div><button class="btn signup-btn" id="createAccountBtn">Create Account</button></div><p id="authMsg"></p><div class="secure">🔒 Secure · Encrypted · Your Data, Your Control</div></div></div></section>
 
 <section id="appView" class="hidden">
-<nav class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="orders">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
+<nav class="nav"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
 <div class="card section"><div class="row"><h3>Filter dashboard report by date</h3><button class="btn small" type="button" id="clearDashboardFilter">Clear dates</button></div><div class="grid2" style="margin-top:8px"><label>From date<input id="dashboardFromDate" type="date"></label><label>To date<input id="dashboardToDate" type="date"></label></div><p class="muted" style="font-size:12px;margin-bottom:0">The totals and monthly breakdown below use the selected date range. Leave dates blank to show all records.</p></div>
 <div class="grid section"><div class="card metric"><div class="label">Total revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Orders logged</div><div class="value" id="ordersCount">0</div></div></div>
@@ -100,7 +100,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
-let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false;
+let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false;
 
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -172,30 +172,39 @@ async function start(s){
  $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("appHeader").classList.remove("hidden");
  $("sync").textContent="Syncing…";
  $("role").textContent=profile.role.toUpperCase();
+ $("dashboardTab").classList.toggle("hidden",!isOwner());
+ if(!isOwner()) $("ordersTab")?.click();
  $("teamTab").classList.toggle("hidden",!isOwner());
  $("ownerSettings").classList.toggle("hidden",!isOwner());
  setDates();renderSettings();await loadData();subscribe();await touchPresence();startPresenceHeartbeat();await refreshActiveCount();$("sync").textContent="Synced";$("sync").className="status ok";
  await importLegacy();
 }
 async function loadData(){
- const [o,e,m]=await Promise.all([
+ const [o,e,m,c]=await Promise.all([
   sb.from("orders").select("*").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
   sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
-  sb.from("mpesa_payments").select("*").order("received_at",{ascending:false}).limit(500)
+  sb.from("mpesa_payments").select("*").order("received_at",{ascending:false}).limit(500),
+  sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").order("created_at",{ascending:true})
  ]);
- const err=o.error||e.error||m.error;
+ const err=o.error||e.error||m.error||c.error;
  if(err){toast(err.message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
- orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];renderAll();
+ orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];comments=c.data||[];renderAll();
  $("sync").textContent="Cloud synced";$("sync").className="status ok";
 }
 function renderAll(){renderDashboard();renderOrders();renderExpenses();renderMpesaPayments()}
-function renderDashboard(){
+async function renderDashboard(){
+ if(!isOwner()){
+  $("dashboard").innerHTML='<div class="card section"><h3>Owner-only report</h3><p class="muted">The total business breakdown is available only to the business owner.</p></div>';
+  return;
+ }
  const from=$("dashboardFromDate").value,to=$("dashboardToDate").value;
  const inRange=date=>(!from||date>=from)&&(!to||date<=to);
  const reportOrders=orders.filter(x=>inRange(x.order_date));
  const reportExpenses=expenses.filter(x=>inRange(x.expense_date));
- const rev=reportOrders.reduce((a,x)=>a+Number(x.amount),0), exp=reportExpenses.reduce((a,x)=>a+Number(x.amount),0);
- $("revenue").textContent=money(rev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(rev-exp);$("ordersCount").textContent=reportOrders.length;
+ const report=await sb.rpc("get_owner_dashboard_report",{p_from_date:from||null,p_to_date:to||null});
+ if(report.error){toast(report.error.message);return}
+ const rev=Number(report.data?.[0]?.revenue||0), exp=Number(report.data?.[0]?.expenses||0);
+ $("revenue").textContent=money(rev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(Number(report.data?.[0]?.net||0));$("ordersCount").textContent=String(report.data?.[0]?.orders_count||0);
  const m={};reportOrders.forEach(x=>{const k=x.order_date.slice(0,7);m[k]??={r:0,e:0};m[k].r+=Number(x.amount)});reportExpenses.forEach(x=>{const k=x.expense_date.slice(0,7);m[k]??={r:0,e:0};m[k].e+=Number(x.amount)});
  const keys=Object.keys(m).sort().reverse();$("months").innerHTML=keys.length?`<table><thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${keys.map(k=>`<tr><td>${esc(k)}</td><td>${money(m[k].r)}</td><td>${money(m[k].e)}</td><td>${money(m[k].r-m[k].e)}</td></tr>`).join("")}</tbody></table>`:"No records found for this date range.";
 }
@@ -206,15 +215,37 @@ function renderMpesaPayments(){
  $("mpesaTotal").textContent=money(total);$("mpesaCount").textContent=String(realPayments.length);
  $("mpesaList").innerHTML=a.length?`<table><thead><tr><th>Time</th><th>Receipt</th><th>Customer</th><th>Phone</th><th>Reference</th><th>Amount</th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.trans_time?new Date(x.trans_time).toLocaleString("en-KE"):"")}</td><td><b>${esc(x.transaction_id)}</b></td><td>${esc([x.first_name,x.middle_name,x.last_name].filter(Boolean).join(" "))}</td><td>${esc(x.phone_number||"")}</td><td>${esc(x.bill_ref_number||x.invoice_number||"")}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No M-PESA payments found.</p>";
 }
+function commentHtml(parentType,parentId){
+ const a=comments.filter(c=>c[parentType+"_id"]===parentId);
+ const list=a.length?a.map(c=>`<div style="margin:4px 0;padding:5px 7px;background:#f8fafc;border-radius:6px"><b>${esc(c.author?.full_name||c.author?.email||"Member")}</b> <span class="muted" style="font-size:11px">${esc(new Date(c.created_at).toLocaleString("en-KE"))}</span><br>${esc(c.comment)}</div>`).join(""):"<span class='muted'>No comments yet.</span>";
+ return `<div style="min-width:220px">${list}<div class="actions" style="margin-top:5px"><input id="${parentType}-comment-${parentId}" placeholder="Add a comment" maxlength="2000" style="min-width:150px"><button class="btn small" onclick="addComment('${parentType}','${parentId}')">Add</button></div></div>`;
+}
+async function addComment(parentType,parentId){
+ const input=$(`${parentType}-comment-${parentId}`);
+ if(!input)return;
+ const comment=input.value.trim();
+ if(!comment)return toast("Enter a comment first.");
+ const payload={author_id:session.user.id,comment};
+ if(parentType==="order")payload.order_id=parentId;else payload.expense_id=parentId;
+ const r=await sb.from("entry_comments").insert(payload);
+ if(r.error)return toast(r.error.message);
+ const c=await sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").eq("id",r.data?.[0]?.id||"").maybeSingle();
+ if(c.data)comments.push(c.data);
+ else {
+  const fresh=await sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").eq(parentType==="order"?"order_id":"expense_id",parentId).order("created_at",{ascending:true});
+  if(!fresh.error)comments=comments.filter(x=>x[parentType+"_id"]!==parentId).concat(fresh.data||[]);
+ }
+ renderOrders();renderExpenses();toast("Comment added");
+}
 function renderOrders(){
  const q=$("orderSearch").value.toLowerCase(),from=$("orderFromDate").value,to=$("orderToDate").value;
  const a=orders.filter(x=>(!from||x.order_date>=from)&&(!to||x.order_date<=to)&&`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
- $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
+ $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td>${commentHtml("order",x.id)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
 }
 function renderExpenses(){
  const q=$("expenseSearch").value.toLowerCase(),from=$("expenseFromDate").value,to=$("expenseToDate").value;
  const a=expenses.filter(x=>(!from||x.expense_date>=from)&&(!to||x.expense_date<=to)&&`${x.category} ${x.description||""}`.toLowerCase().includes(q));
- $("expensesList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category)}</td><td>${esc(x.description||"")}</td><td>${money(x.amount)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editExpense('${x.id}')">Edit</button><button class="btn small danger" onclick="delExpense('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No expenses found.</p>";
+ $("expensesList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category)}</td><td>${esc(x.description||"")}</td><td>${money(x.amount)}</td><td>${commentHtml("expense",x.id)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editExpense('${x.id}')">Edit</button><button class="btn small danger" onclick="delExpense('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No expenses found.</p>";
 }
 window.editOrder=id=>{const x=orders.find(v=>v.id===id);if(!x)return;$("orderId").value=x.id;$("customerName").value=x.customer_name;$("customerPhone").value=x.customer_phone||"";$("service").value=x.service;$("orderAmount").value=x.amount;$("orderDate").value=x.order_date;$("orderFormTitle").textContent="Edit order";$("cancelOrder").classList.remove("hidden");document.querySelector('[data-tab="orders"]').click()}
 window.editExpense=id=>{const x=expenses.find(v=>v.id===id);if(!x)return;$("expenseId").value=x.id;$("expenseCategory").value=x.category;$("expenseDescription").value=x.description||"";$("expenseAmount").value=x.amount;$("expenseDate").value=x.expense_date;$("expenseFormTitle").textContent="Edit expense";$("cancelExpense").classList.remove("hidden");document.querySelector('[data-tab="expenses"]').click()}
