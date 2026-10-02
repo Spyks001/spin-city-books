@@ -23,7 +23,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 
 <section id="appView" class="hidden">
 <nav class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="orders">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
-<div id="dashboard" class="tab hidden">
+<div id="dashboard" class="tab">
 <div class="card section"><div class="row"><h3>Filter dashboard report by date</h3><button class="btn small" type="button" id="clearDashboardFilter">Clear dates</button></div><div class="grid2" style="margin-top:8px"><label>From date<input id="dashboardFromDate" type="date"></label><label>To date<input id="dashboardToDate" type="date"></label></div><p class="muted" style="font-size:12px;margin-bottom:0">The totals and monthly breakdown below use the selected date range. Leave dates blank to show all records.</p></div>
 <div class="grid section"><div class="card metric"><div class="label">Total revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Orders logged</div><div class="value" id="ordersCount">0</div></div></div>
 <div class="card"><div class="row"><h3>Monthly breakdown</h3><button class="btn small" id="refresh">Refresh</button></div><div id="months" class="muted">No records yet.</div></div>
