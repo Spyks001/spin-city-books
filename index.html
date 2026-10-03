@@ -100,7 +100,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
-let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false;
+let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false, loadDataBusy=false, loadDataQueued=false, loadDataTimer=null;
 
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -133,7 +133,9 @@ $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
  if(!row.customer_name||!row.service||row.amount<0||!row.order_date)return toast("Please check the order fields.");
  let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id});
- const r=await q;if(r.error)return toast(r.error.message);toast(id?"Order updated":"Order saved");resetOrder();await loadData();
+ const r=await q;if(r.error)return toast(r.error.message);
+ const wasNew=!id; toast(wasNew?"Order saved":"Order updated");resetOrder();await loadData();
+ if(wasNew&&typeof window.wireNewOrderEmail==="function"){window.wireNewOrderEmail(r.data?.[0]?.id||null).catch(()=>{})}
 }
 $("expenseForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("expenseId").value;const row={category:$("expenseCategory").value,description:$("expenseDescription").value.trim(),amount:Number($("expenseAmount").value),expense_date:$("expenseDate").value};
@@ -180,6 +182,9 @@ async function start(s){
  await importLegacy();
 }
 async function loadData(){
+ if(loadDataBusy){loadDataQueued=true;return}
+ loadDataBusy=true;
+ try{
  const [o,e,m,c]=await Promise.all([
   sb.from("orders").select("*").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
   sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
@@ -190,7 +195,9 @@ async function loadData(){
  if(err){toast(err.message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
  orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];comments=c.data||[];renderAll();
  $("sync").textContent="Cloud synced";$("sync").className="status ok";
+ } finally { loadDataBusy=false; if(loadDataQueued){loadDataQueued=false; scheduleLoadData()} }
 }
+function scheduleLoadData(){clearTimeout(loadDataTimer);loadDataTimer=setTimeout(loadData,250)}
 function renderAll(){renderDashboard();renderOrders();renderExpenses();renderMpesaPayments()}
 async function renderDashboard(){
  if(!isOwner()){
@@ -241,6 +248,7 @@ function renderOrders(){
  const q=$("orderSearch").value.toLowerCase(),from=$("orderFromDate").value,to=$("orderToDate").value;
  const a=orders.filter(x=>(!from||x.order_date>=from)&&(!to||x.order_date<=to)&&`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
  $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td>${commentHtml("order",x.id)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
+ if(typeof window.enhanceOrdersTable==="function")window.enhanceOrdersTable();
 }
 function renderExpenses(){
  const q=$("expenseSearch").value.toLowerCase(),from=$("expenseFromDate").value,to=$("expenseToDate").value;
@@ -351,7 +359,11 @@ $("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
- channel=sb.channel("spin-city-books").on("postgres_changes",{event:"*",schema:"public",table:"orders"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"expenses"},loadData).on("postgres_changes",{event:"*",schema:"public",table:"mpesa_payments"},loadData).subscribe();
+ channel=sb.channel("spin-city-books")
+  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},scheduleLoadData)
+  .on("postgres_changes",{event:"*",schema:"public",table:"expenses"},scheduleLoadData)
+  .on("postgres_changes",{event:"*",schema:"public",table:"mpesa_payments"},scheduleLoadData)
+  .subscribe();
 }
 async function importLegacy(){
  if(localStorage.getItem("sc_cloud_import_done"))return;
@@ -370,4 +382,4 @@ sb.auth.getSession().then(({data})=>data.session&&start(data.session));
 sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_IN"&&s&&!session)start(s)});
 setDates();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js");</script>
-</body></html>
+<script src="./branding.js?v=17"></script><script src="./transaction-audit.js?v=17"></script><script src="./date-format-fix.js?v=17"></script></body></html>
