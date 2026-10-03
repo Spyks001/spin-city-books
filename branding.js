@@ -18,27 +18,6 @@
   };
   const style = document.createElement('style'); style.textContent = `.app-logo-banner{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #dce7f5;border-radius:14px;padding:10px 16px;margin:0 0 14px;box-shadow:0 2px 8px #0b3a6b12}.app-logo-banner img{width:58px;height:42px;object-fit:contain;border-radius:8px}.app-logo-banner strong{display:block;font-size:21px;line-height:1;color:#0758b8;text-transform:lowercase}.app-logo-banner span{display:block;margin-top:4px;font-size:11px;color:#536b8f}.page-logo{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid #dce7f5}.page-logo img{width:52px;height:38px;object-fit:contain;border-radius:7px}.page-logo span{font-weight:800;font-size:18px;color:#0758b8;text-transform:lowercase}.audit-tab-panel{margin-top:2px}.audit-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}.audit-toolbar label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#536b8f}.audit-toolbar input,.audit-toolbar select{min-width:155px}.audit-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.audit-summary .card{padding:12px 14px}.audit-table-wrap{overflow:auto}.audit-table td,.audit-table th{white-space:nowrap}.audit-deleted{background:#fff7f7}.audit-deleted td{color:#8b1e1e}.audit-added{color:#18794e;font-weight:700}.audit-empty{padding:24px;text-align:center;color:#536b8f}.audit-help{font-size:12px;color:#536b8f;margin:0 0 14px;line-height:1.5}@media(max-width:520px){.app-logo-banner{padding:8px 12px}.app-logo-banner img{width:48px;height:36px}.audit-toolbar input,.audit-toolbar select{width:100%;min-width:0}}`; document.head.appendChild(style);
 
-  // Send notification only after a genuinely new order is submitted. Existing-order edits never notify.
-  const wireNewOrderEmail = () => {
-    const form = document.getElementById('orderForm');
-    if (!form || form.dataset.newOrderEmailWired === '1') return;
-    form.dataset.newOrderEmailWired = '1';
-    form.addEventListener('submit', async () => {
-      const idField = document.getElementById('orderId');
-      const isNew = !idField?.value;
-      if (!isNew || typeof sb === 'undefined') return;
-      setTimeout(async () => {
-        try {
-          const { data: { user } } = await sb.auth.getUser();
-          if (!user) return;
-          const { data: order } = await sb.from('orders').select('id,created_at').eq('created_by', user.id).order('created_at', { ascending:false }).limit(1).maybeSingle();
-          if (!order?.id) return;
-          await sb.functions.invoke('new-order-email', { body: { order_id: order.id, event_type: 'INSERT' } });
-        } catch (e) { console.error('New-order email notification failed:', e); }
-      }, 1200);
-    }, true);
-  };
-
   const addAuditTab = () => {
     const appView = document.getElementById('appView'); const nav = appView?.querySelector('.nav');
     if (!nav || nav.querySelector('[data-tab="transactions"]')) return;
@@ -65,6 +44,5 @@
     (audit||[]).filter(a=>a.action==='DELETE').forEach(a=>{const s=a.record_snapshot||{},date=s.order_date||s.expense_date||a.occurred_at?.slice(0,10);if(from&&date<from)return;if(to&&date>to)return;rows.push({id:a.record_id,type:a.table_name==='orders'?'Order':'Expense',date,description:a.table_name==='orders'?`${s.customer_name||'Customer'} — ${s.service||'Service'}`:`${s.category||'Expense'}${s.description?' — '+s.description:''}`,amount:a.table_name==='expenses'?-Math.abs(Number(s.amount||0)):Number(s.amount||0),createdBy:s.created_by,createdAt:s.created_at,deletedBy:a.actor_id,deletedEmail:a.actor_email,deletedAt:a.occurred_at,status:'Deleted'});});
     rows.sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||'')));const ids=[...new Set(rows.flatMap(r=>[r.createdBy,r.deletedBy]).filter(Boolean))];let profileMap={};if(ids.length){const{data:profiles}=await sb.from('profiles').select('id,email,full_name').in('id',ids);(profiles||[]).forEach(p=>profileMap[p.id]=p);}const total=rows.reduce((s,r)=>s+Number(r.amount||0),0),active=rows.filter(r=>r.status==='Active').length,del=rows.filter(r=>r.status==='Deleted').length;document.getElementById('auditSummary').innerHTML=`<div class="card"><strong>${rows.length}</strong><div class="muted">Entries</div></div><div class="card"><strong>${money(total)}</strong><div class="muted">Net shown</div></div><div class="card"><strong>${active}</strong><div class="muted">Active</div></div><div class="card"><strong>${del}</strong><div class="muted">Deleted</div></div>`;if(!rows.length){results.innerHTML='<div class="audit-empty">No transactions found for this date range.</div>';return;}results.innerHTML=`<table class="audit-table"><thead><tr><th>Date</th><th>Entry time</th><th>Type</th><th>Description</th><th>Amount</th><th>Added by</th><th>Deleted by</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.status==='Deleted'?'audit-deleted':''}"><td>${escapeHtml(r.date||'—')}</td><td>${r.createdAt?escapeHtml(new Date(r.createdAt).toLocaleString('en-KE',{timeZone:'Africa/Nairobi'})):'—'}</td><td>${escapeHtml(r.type)}</td><td>${escapeHtml(r.description)}</td><td>${money(r.amount)}</td><td class="audit-added">${escapeHtml(displayName(profileMap,r.createdBy))}</td><td>${r.deletedBy?escapeHtml(displayName(profileMap,r.deletedBy,r.deletedEmail)):'—'}${r.deletedAt?`<div class="muted">${escapeHtml(new Date(r.deletedAt).toLocaleString('en-KE',{timeZone:'Africa/Nairobi'}))}</div>`:''}</td><td>${r.status==='Deleted'?'<span class="pill" style="background:#fee2e2;color:#991b1b">Deleted</span>':'<span class="pill approved">Active</span>'}</td></tr>`).join('')}</tbody></table>`;
   }
-  addBranding(); addAuditTab(); wireNewOrderEmail();
-  new MutationObserver(()=>{addBranding();addAuditTab();wireNewOrderEmail();}).observe(document.body,{childList:true,subtree:true});
+  addBranding(); addAuditTab();
 })();
