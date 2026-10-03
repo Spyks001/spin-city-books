@@ -159,11 +159,7 @@
     addPageBranding();
     addDateFilterTab();
     addOrderFormHint();
-    const list = document.getElementById('ordersList');
-    if (list) new MutationObserver(() => enhanceOrdersTable()).observe(list,{childList:true,subtree:true});
-    new MutationObserver(() => { addPageBranding(); addDateFilterTab(); addOrderFormHint(); }).observe(document.body,{childList:true,subtree:true});
-    setTimeout(enhanceOrdersTable,300);
-    setTimeout(enhanceOrdersTable,1000);
+    setTimeout(enhanceOrdersTable,0);
   }
 
   const style=document.createElement('style');
@@ -176,6 +172,12 @@
   `;
   document.head.appendChild(style);
 
+  window.enhanceOrdersTable = enhanceOrdersTable;
+  window.wireNewOrderEmail = async function(orderId) {
+    if (!orderId || typeof sb === 'undefined') return;
+    try { await sb.functions.invoke('new-order-email',{body:{order_id:orderId,event_type:'INSERT'}}); }
+    catch(e){ console.warn('New-order email notification failed',e); }
+  };
   const boot = () => { startObservers(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
