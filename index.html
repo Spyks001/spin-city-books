@@ -135,7 +135,7 @@ $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id}).select("id").single();
  const r=await q;if(r.error)return toast(r.error.message);
  const wasNew=!id; toast(wasNew?"Order saved":"Order updated");resetOrder();await loadData();
- if(wasNew&&typeof window.wireNewOrderEmail==="function"){window.wireNewOrderEmail(r.data?.[0]?.id||null).catch(()=>{})}
+ if(wasNew&&typeof window.wireNewOrderEmail==="function"){window.wireNewOrderEmail(r.data?.id||null).catch(()=>{})}
 }
 $("expenseForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("expenseId").value;const row={category:$("expenseCategory").value,description:$("expenseDescription").value.trim(),amount:Number($("expenseAmount").value),expense_date:$("expenseDate").value};
