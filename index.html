@@ -100,7 +100,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
-let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false, loadDataBusy=false, loadDataQueued=false, loadDataTimer=null;
+let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], commentsByParent={}, channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false, loadDataBusy=false, loadDataQueued=false, loadDataTimer=null;
 
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -132,7 +132,7 @@ $("clearDashboardFilter").onclick=()=>{$("dashboardFromDate").value="";$("dashbo
 $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
  if(!row.customer_name||!row.service||row.amount<0||!row.order_date)return toast("Please check the order fields.");
- let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id});
+ let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id}).select("id").single();
  const r=await q;if(r.error)return toast(r.error.message);
  const wasNew=!id; toast(wasNew?"Order saved":"Order updated");resetOrder();await loadData();
  if(wasNew&&typeof window.wireNewOrderEmail==="function"){window.wireNewOrderEmail(r.data?.[0]?.id||null).catch(()=>{})}
@@ -186,20 +186,21 @@ async function loadData(){
  loadDataBusy=true;
  try{
  const [o,e,m,c]=await Promise.all([
-  sb.from("orders").select("*").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
-  sb.from("expenses").select("*").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
-  sb.from("mpesa_payments").select("*").order("received_at",{ascending:false}).limit(500),
+  sb.from("orders").select("id,customer_name,customer_phone,service,amount,order_date,created_by,created_at,updated_at").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
+  sb.from("expenses").select("id,category,description,amount,expense_date,created_by,created_at,updated_at").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
+  sb.from("mpesa_payments").select("id,transaction_id,amount,trans_time,received_at,business_short_code,bill_ref_number,invoice_number,phone_number,first_name,middle_name,last_name,is_test").order("received_at",{ascending:false}).limit(500),
   sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").order("created_at",{ascending:true})
  ]);
  const err=o.error||e.error||m.error||c.error;
  if(err){toast(err.message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
- orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];comments=c.data||[];renderAll();
+ orders=o.data||[];expenses=e.data||[];mpesaPayments=m.data||[];comments=c.data||[];commentsByParent={};comments.forEach(x=>{const k=x.order_id?`order:${x.order_id}`:`expense:${x.expense_id}`;(commentsByParent[k]??=[]).push(x)});renderAll();
  $("sync").textContent="Cloud synced";$("sync").className="status ok";
  } finally { loadDataBusy=false; if(loadDataQueued){loadDataQueued=false; scheduleLoadData()} }
 }
 function scheduleLoadData(){clearTimeout(loadDataTimer);loadDataTimer=setTimeout(loadData,250)}
 function renderAll(){renderDashboard();renderOrders();renderExpenses();renderMpesaPayments()}
 async function renderDashboard(){
+ if(!isOwner() || $("dashboard")?.classList.contains("hidden"))return;
  if(!isOwner()){
   $("dashboard").innerHTML='<div class="card section"><h3>Owner-only report</h3><p class="muted">The total business breakdown is available only to the business owner.</p></div>';
   return;
@@ -223,7 +224,7 @@ function renderMpesaPayments(){
  $("mpesaList").innerHTML=a.length?`<table><thead><tr><th>Time</th><th>Receipt</th><th>Customer</th><th>Phone</th><th>Reference</th><th>Amount</th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.trans_time?new Date(x.trans_time).toLocaleString("en-KE"):"")}</td><td><b>${esc(x.transaction_id)}</b></td><td>${esc([x.first_name,x.middle_name,x.last_name].filter(Boolean).join(" "))}</td><td>${esc(x.phone_number||"")}</td><td>${esc(x.bill_ref_number||x.invoice_number||"")}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No M-PESA payments found.</p>";
 }
 function commentHtml(parentType,parentId){
- const a=comments.filter(c=>c[parentType+"_id"]===parentId);
+ const a=commentsByParent[`${parentType}:${parentId}`]||[];
  const list=a.length?a.map(c=>`<div style="margin:4px 0;padding:5px 7px;background:#f8fafc;border-radius:6px"><b>${esc(c.author?.full_name||c.author?.email||"Member")}</b> <span class="muted" style="font-size:11px">${esc(new Date(c.created_at).toLocaleString("en-KE"))}</span><br>${esc(c.comment)}</div>`).join(""):"<span class='muted'>No comments yet.</span>";
  return `<div style="min-width:220px">${list}<div class="actions" style="margin-top:5px"><input id="${parentType}-comment-${parentId}" placeholder="Add a comment" maxlength="2000" style="min-width:150px"><button class="btn small" onclick="addComment('${parentType}','${parentId}')">Add</button></div></div>`;
 }
@@ -240,7 +241,7 @@ async function addComment(parentType,parentId){
  if(c.data)comments.push(c.data);
  else {
   const fresh=await sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").eq(parentType==="order"?"order_id":"expense_id",parentId).order("created_at",{ascending:true});
-  if(!fresh.error)comments=comments.filter(x=>x[parentType+"_id"]!==parentId).concat(fresh.data||[]);
+  if(!fresh.error)comments=comments.filter(x=>x[parentType+"_id"]!==parentId).concat(fresh.data||[]);commentsByParent[`${parentType}:${parentId}`]=comments.filter(x=>x[parentType+"_id"]===parentId);
  }
  renderOrders();renderExpenses();toast("Comment added");
 }
