@@ -21,11 +21,13 @@ body{margin:0}
 #appView .nav{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;padding-bottom:4px}
 #appView .nav::-webkit-scrollbar{display:none}
 #appView .nav button{flex:0 0 auto;min-height:44px;padding:10px 13px;touch-action:manipulation}
-#appView .card,#appView .section{max-width:100%;box-sizing:border-box}
+#appView .card,#appView .section{max-width:100%;box-sizing:border-box;min-width:0}
+#appView .grid2>.card,#appView .grid>.card{min-width:0}
 #appView input,#appView select,#appView textarea,#appView button{font-size:16px}
 #appView input,#appView select,#appView textarea{max-width:100%;box-sizing:border-box}
-#ordersList,#expensesList,#mpesaList,.audit-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-#ordersList table,#expensesList table,#mpesaList table,.audit-table{min-width:720px}
+#ordersList,#expensesList,#mpesaList,.audit-table-wrap{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:auto}
+#ordersList table,#expensesList table,#mpesaList table,.audit-table{min-width:720px;width:max-content;max-width:none}
+#ordersList::after,#expensesList::after,#mpesaList::after,.audit-table-wrap::after{content:"Swipe left/right to see more";display:block;width:max-content;margin:4px 0 0 auto;font-size:11px;color:var(--muted)}
 #toast{max-width:calc(100vw - 24px);left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));box-sizing:border-box}
 .mobile-loading{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
 .mobile-loading[hidden]{display:none}
