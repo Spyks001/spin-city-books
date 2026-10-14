@@ -124,6 +124,20 @@ body{margin:0}
 @media(max-width:520px){#appView .month-top{align-items:flex-start}#appView .month-net{font-size:10px}#appView .month-metrics strong{font-size:10px}}
 </style>
 <style id="order-payment-action-polish">#appView .record-actions .paid-action{background:#e8f8ef;border-color:#b9e8cb;color:#18794e}#appView .record-actions .unpaid-action{background:#fff7e8;border-color:#f5d7a1;color:#9a5b00}#appView .record-actions .icon-action{flex:0 0 30px}</style>
+<style id="professional-home-navigation">
+#appView .app-homebar{display:flex;flex-direction:column;gap:10px;margin:0 0 12px;padding:12px;border:1px solid #d8e7f8;border-radius:14px;background:linear-gradient(135deg,#fff 0%,#f0f7ff 100%);box-shadow:0 5px 18px #0b3a6b0c}
+#appView .homebar-brand{display:flex;align-items:center;gap:10px}
+#appView .homebar-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(135deg,#063d92,#087ff5);color:#fff;font-weight:900;font-size:13px;box-shadow:0 4px 10px #087ff533}
+#appView .homebar-brand strong{display:block;font-size:14px;color:#102a56}
+#appView .homebar-brand small{display:block;font-size:10px;color:#637895;margin-top:2px}
+#appView .workspace-select-label{display:block;font-size:10px;font-weight:800;color:#536b8f;letter-spacing:.3px;text-transform:uppercase}
+#appView #workspaceSelect{margin-top:5px;padding:10px 34px 10px 11px;border:1px solid #cbdcf1;border-radius:9px;background-color:#fff;color:#102a56;font-size:12px!important;font-weight:700;box-shadow:0 1px 3px #0b3a6b0b}
+#appView .app-nav-legacy{display:none!important}
+#appView #dashboard>.dashboard-focus-bar{margin-bottom:9px}
+#appView #dashboard>.dashboard-focus-bar label{font-size:10px}
+#appView #dashboard>.dashboard-focus-bar select{padding:7px}
+@media(min-width:600px){#appView .app-homebar{flex-direction:row;align-items:center;justify-content:space-between;gap:14px}#appView .workspace-select-label{width:min(250px,58%)}}
+</style>
 </head>
 <body>
 <header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row"><span id="sync" class="status">Connecting…</span><span id="role" class="pill"></span><button class="btn small" id="logout">Log out</button></div></div></header>
@@ -132,7 +146,7 @@ body{margin:0}
 <section id="loginView"><div class="login-stage"><div class="login-left"><img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp"><h2>Welcome to <span>Spin City Books</span></h2><p class="lead"><b>Smart Bookkeeping for Your Laundry Business</b><br>Track income and expenses, manage your customers, and keep your business running smoothly — all in one place.</p><div class="features"><div class="feature"><div class="ico">▥</div><b>Track Finances</b><span>Record income, expenses and profits.</span></div><div class="feature"><div class="ico">♟</div><b>Manage Customers</b><span>Keep customer records and history.</span></div><div class="feature"><div class="ico">▤</div><b>View Reports</b><span>Get clear insights with simple reports.</span></div><div class="feature"><div class="ico">☁</div><b>Access Anywhere</b><span>Use on any device, anytime.</span></div></div><div class="slogan">Clean Clothes &nbsp;•&nbsp; Happy Customers &nbsp;•&nbsp; Better Business</div></div><div class="login-overlay"><h2>🔒 &nbsp;Log In to Your Account</h2><p>Access your business records and manage your team.</p><div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div><form id="authForm" class="auth-form"><label><input class="auth-input" id="email" type="email" placeholder="Email address" required autocomplete="email"></label><label><input class="auth-input" id="password" type="password" minlength="6" placeholder="Password" required autocomplete="current-password"></label><label id="nameWrap" class="hidden"><input class="auth-input" id="fullName" type="text" placeholder="Full name"></label><div class="login-links"><span>☐ Remember me</span><a id="forgot">Forgot password?</a></div><button class="btn primary login-main-btn" id="authBtn">Log in →</button></form><div id="inviteSetup" class="invite-setup hidden"><h3>🎉 Finish your staff account</h3><p class="note">Your invitation has already verified this email. Set your password and name below — you will go straight into Spin City Books after this.</p><label>Email<input class="auth-input" id="inviteSetupEmail" type="email" readonly></label><label>Full name<input class="auth-input" id="inviteFullName" type="text" placeholder="Your full name" autocomplete="name" required></label><label>New password<input class="auth-input" id="invitePassword" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" required></label><label>Confirm password<input class="auth-input" id="invitePassword2" type="password" minlength="6" placeholder="Repeat your password" autocomplete="new-password" required></label><button class="btn primary login-main-btn" id="finishInvite">Finish sign-up →</button><p id="inviteSetupMsg"></p></div><div id="signupExtras"><div class="signup-divider">New to Spin City Books?</div><button class="btn signup-btn" id="createAccountBtn">Create Account</button></div><p id="authMsg"></p><div class="secure">🔒 Secure · Encrypted · Your Data, Your Control</div></div></div></section>
 
 <section id="appView" class="hidden">
-<nav class="nav"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="new" id="newTab">New</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
+<div class="app-homebar"><div class="homebar-brand"><span class="homebar-mark">SC</span><div><strong>Spin City Books</strong><small>Business workspace</small></div></div><label class="workspace-select-label" for="workspaceSelect">Go to section<select id="workspaceSelect" aria-label="Choose app section"><option value="dashboard">⌂ Home dashboard</option><option value="new">＋ New entry</option><option value="orders">▤ Orders</option><option value="expenses">↗ Expenses</option><option value="mpesa">◉ M-PESA</option><option value="team" id="workspaceTeamOption" disabled>♙ Team</option><option value="settings">⚙ Settings</option><option value="audit">▥ Transactions</option></select></label></div><nav class="nav app-nav-legacy"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="new" id="newTab">New</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
 <div class="dashboard-focus-bar"><label for="dashboardFocus">Dashboard view<select id="dashboardFocus"><option value="overview">Overview</option><option value="monthly">Monthly performance</option><option value="orders">Orders focus</option><option value="expenses">Expenses focus</option></select></label><p id="dashboardFocusHint">Your key figures and monthly performance at a glance.</p></div>
 <div class="card section"><div class="row"><h3>Filter dashboard report by date</h3><button class="btn small" type="button" id="clearDashboardFilter">Clear dates</button></div><div class="grid2" style="margin-top:8px"><label>From date<input id="dashboardFromDate" type="date"></label><label>To date<input id="dashboardToDate" type="date"></label></div><p class="muted" style="font-size:12px;margin-bottom:0">The totals and monthly breakdown below use the selected date range. Leave dates blank to show all records.</p></div>
@@ -272,6 +286,17 @@ $("authForm").onsubmit=async e=>{
 }
 
 $("logout").onclick=async()=>{stopPresenceHeartbeat();await sb.auth.signOut({scope:"local"});location.reload()}
+const workspaceSelect=$("workspaceSelect");
+if(workspaceSelect){
+ workspaceSelect.addEventListener("change",()=>{
+  const target=workspaceSelect.value;
+  if(target==="audit"){workspaceSelect.value="dashboard";const auditTab=document.querySelector('[data-tab="audit"]');if(auditTab)auditTab.click();else toast("Transactions view is not available.");return;}
+  const targetButton=document.querySelector('[data-tab="'+target+'"]');
+  if(targetButton&&!targetButton.classList.contains("hidden"))targetButton.click();
+  else {workspaceSelect.value="dashboard";toast("This section is not available for your account.");}
+ });
+}
+
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.tab==="dashboard")renderDashboard();if(b.dataset.tab==="team")loadTeam();if(b.dataset.tab==="mpesa")renderMpesaPayments();if(b.dataset.tab==="settings"){renderSettings();refreshActiveCount()}})
 $("refresh").onclick=loadData;
 $("orderSearch").oninput=renderOrders;$("expenseSearch").oninput=renderExpenses;$("mpesaSearch").oninput=renderMpesaPayments;
