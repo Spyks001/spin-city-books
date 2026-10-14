@@ -138,6 +138,20 @@ body{margin:0}
 #appView #dashboard>.dashboard-focus-bar select{padding:7px}
 @media(min-width:600px){#appView .app-homebar{flex-direction:row;align-items:center;justify-content:space-between;gap:14px}#appView .workspace-select-label{width:min(250px,58%)}}
 </style>
+<style id="compact-dashboard-date-filter">
+#appView #dashboard{position:relative}
+#appView .dashboard-date-corner{display:flex;justify-content:flex-end;align-items:center;margin:0 0 5px;min-height:22px}
+#appView .dashboard-date-menu{position:relative;font-size:9px}
+#appView .dashboard-date-menu summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid #d5e2f3;border-radius:7px;background:#f7faff;color:#647895;font-size:9px;font-weight:700}
+#appView .dashboard-date-menu summary::-webkit-details-marker{display:none}
+#appView .dashboard-date-menu summary:after{content:"⌄";font-size:10px;color:#087ff5}
+#appView .dashboard-date-popover{position:absolute;right:0;top:calc(100% + 5px);z-index:30;width:min(220px,78vw);padding:10px;border:1px solid #d7e4f4;border-radius:10px;background:#fff;box-shadow:0 8px 24px #102a5626}
+#appView .dashboard-date-heading{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:7px;font-size:10px;color:#102a56}
+#appView .dashboard-date-heading .btn{font-size:9px;padding:3px 6px;min-height:22px}
+#appView .dashboard-date-popover label{display:block;font-size:9px;color:#647895;margin:5px 0}
+#appView .dashboard-date-popover input{display:block;width:100%;margin-top:3px;padding:5px 6px;font-size:10px!important;min-height:28px;border-radius:6px}
+#appView .dashboard-date-popover p{font-size:9px;color:#8090a8;margin:6px 0 0}
+</style>
 </head>
 <body>
 <header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row"><span id="sync" class="status">Connecting…</span><span id="role" class="pill"></span><button class="btn small" id="logout">Log out</button></div></div></header>
@@ -149,7 +163,7 @@ body{margin:0}
 <div class="app-homebar"><div class="homebar-brand"><span class="homebar-mark">SC</span><div><strong>Spin City Books</strong><small>Business workspace</small></div></div><label class="workspace-select-label" for="workspaceSelect">Go to section<select id="workspaceSelect" aria-label="Choose app section"><option value="dashboard">⌂ Home dashboard</option><option value="new">＋ New entry</option><option value="orders">▤ Orders</option><option value="expenses">↗ Expenses</option><option value="mpesa">◉ M-PESA</option><option value="team" id="workspaceTeamOption" disabled>♙ Team</option><option value="settings">⚙ Settings</option><option value="audit">▥ Transactions</option></select></label></div><nav class="nav app-nav-legacy"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="new" id="newTab">New</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
 <div class="dashboard-focus-bar"><label for="dashboardFocus">Dashboard view<select id="dashboardFocus"><option value="overview">Overview</option><option value="monthly">Monthly performance</option><option value="orders">Orders focus</option><option value="expenses">Expenses focus</option></select></label><p id="dashboardFocusHint">Your key figures and monthly performance at a glance.</p></div>
-<div class="card section"><div class="row"><h3>Filter dashboard report by date</h3><button class="btn small" type="button" id="clearDashboardFilter">Clear dates</button></div><div class="grid2" style="margin-top:8px"><label>From date<input id="dashboardFromDate" type="date"></label><label>To date<input id="dashboardToDate" type="date"></label></div><p class="muted" style="font-size:12px;margin-bottom:0">The totals and monthly breakdown below use the selected date range. Leave dates blank to show all records.</p></div>
+<div class="dashboard-date-corner"><details class="dashboard-date-menu"><summary title="Filter report dates">Date filter</summary><div class="dashboard-date-popover"><div class="dashboard-date-heading"><strong>Report period</strong><button class="btn small" type="button" id="clearDashboardFilter">Clear</button></div><label>From<input id="dashboardFromDate" type="date"></label><label>To<input id="dashboardToDate" type="date"></label><p>Leave blank to include all records.</p></div></details></div>
 <div class="grid section"><div class="card metric"><div class="label">Paid revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Paid orders</div><div class="value" id="ordersCount">0</div></div></div>
 <div class="card dashboard-monthly"><div class="row"><div><h3>Monthly performance</h3><p class="muted" style="font-size:11px;margin:2px 0 0">A clear view of paid income, costs and net result.</p></div><button class="btn small" id="refresh">Refresh</button></div><div class="monthly-legend"><span><i class="legend-dot revenue-dot"></i>Paid revenue</span><span><i class="legend-dot expense-dot"></i>Expenses</span><span><i class="legend-dot net-dot"></i>Net</span></div><div id="months" class="muted">No records yet.</div><div class="monthly-note">Only orders marked Paid count as revenue.</div></div>
 </div>
