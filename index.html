@@ -329,7 +329,7 @@ async function addComment(parentType,parentId){
  }
  renderOrders();renderExpenses();toast("Comment added");
 }
-window.toggleOrderPaid=async(id,paid)=>{if(!session)return;const r=await sb.from("orders").update({is_paid:paid,updated_at:new Date().toISOString()}).eq("id",id);if(r.error)return toast("Payment status not saved: "+r.error.message);toast(paid?"Order marked Paid":"Order marked Not paid");await loadData()};
+window.toggleOrderPaid=async(id,paid)=>{if(!session)return;const r=await sb.rpc("set_order_paid",{p_order_id:id,p_is_paid:paid});if(r.error)return toast("Payment status not saved: "+r.error.message);toast(paid?"Order marked Paid":"Order marked Not paid");await loadData()};
 function renderOrders(){
  const q=$("orderSearch").value.toLowerCase(),from=$("orderFromDate").value,to=$("orderToDate").value;
  const a=orders.filter(x=>(!from||x.order_date>=from)&&(!to||x.order_date<=to)&&`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
