@@ -353,7 +353,7 @@ async function start(s){
  $("role").textContent=profile.role.toUpperCase();
  $("dashboardTab").classList.toggle("hidden",!isOwner());
  if(!isOwner()) $("ordersTab")?.click();
- $("teamTab").classList.toggle("hidden",!isOwner());
+ $("teamTab").classList.toggle("hidden",!isOwner());$("workspaceTeamOption").disabled=!isOwner();
  $("ownerSettings").classList.toggle("hidden",!isOwner());$("mpesaPullPanel").classList.toggle("hidden",!isOwner());
  
 const dashboardFocus=$("dashboardFocus");
