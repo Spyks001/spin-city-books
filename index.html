@@ -17,7 +17,7 @@ form{display:grid;gap:12px}label{font-size:13px;font-weight:700}input,select{wid
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#087ff5"><link rel="apple-touch-icon" href="icons/icon.svg"><style id="mobile-performance-ui">
 html,body{width:100%;overflow-x:hidden}
 body{margin:0}
-#appView{width:100%;max-width:100%;box-sizing:border-box}
+#appView{width:min(100%,760px);max-width:760px;margin:0 auto;padding:0 10px 24px;box-sizing:border-box}#appView .grid2{grid-template-columns:1fr!important}#appView .grid.section{grid-template-columns:repeat(2,minmax(0,1fr))}#appView .card{padding:12px}#appView .section{margin-bottom:10px}
 #appView .nav{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;padding-bottom:4px}
 #appView .nav::-webkit-scrollbar{display:none}
 #appView .nav button{flex:0 0 auto;min-height:44px;padding:10px 13px;touch-action:manipulation}
@@ -40,6 +40,10 @@ body{margin:0}
   .app-logo-banner{margin-bottom:10px}
   .row{flex-wrap:wrap;gap:8px}
   .grid,.form-grid{grid-template-columns:1fr!important}
+  #appView .grid.section{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #appView .grid2{grid-template-columns:1fr!important}
+  #appView .nav{gap:5px}
+  #appView .nav button{padding:8px 10px}
   .btn,.primary,button{min-height:44px}
   .audit-toolbar{display:grid!important;grid-template-columns:1fr;align-items:stretch!important}
   .audit-toolbar label,.audit-toolbar input,.audit-toolbar select,.audit-toolbar button{width:100%;min-width:0!important}
@@ -63,8 +67,8 @@ body{margin:0}
 <nav class="nav"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="new" id="newTab">New</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
 <div class="card section"><div class="row"><h3>Filter dashboard report by date</h3><button class="btn small" type="button" id="clearDashboardFilter">Clear dates</button></div><div class="grid2" style="margin-top:8px"><label>From date<input id="dashboardFromDate" type="date"></label><label>To date<input id="dashboardToDate" type="date"></label></div><p class="muted" style="font-size:12px;margin-bottom:0">The totals and monthly breakdown below use the selected date range. Leave dates blank to show all records.</p></div>
-<div class="grid section"><div class="card metric"><div class="label">Total revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Orders logged</div><div class="value" id="ordersCount">0</div></div></div>
-<div class="card"><div class="row"><h3>Monthly breakdown</h3><button class="btn small" id="refresh">Refresh</button></div><div id="months" class="muted">No records yet.</div></div>
+<div class="grid section"><div class="card metric"><div class="label">Paid revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Paid orders</div><div class="value" id="ordersCount">0</div></div></div>
+<div class="card"><div class="row"><h3>Monthly breakdown</h3><button class="btn small" id="refresh">Refresh</button></div><p class="muted" style="font-size:12px;margin:0 0 8px">Only orders marked Paid count as revenue. Unpaid orders stay out of the monthly totals.</p><div id="months" class="muted">No records yet.</div></div>
 </div>
 
 <div id="new" class="tab hidden">
@@ -111,6 +115,7 @@ body{margin:0}
 </div></div></div>
 
 <div id="mpesa" class="tab hidden">
+<div class="card section"><h3 style="margin:0 0 6px">Recover missed Till payments</h3><p class="settings-note">Production only. Register once with the M-PESA business phone nominated for transaction reports, then recover transactions from the last 48 hours.</p><label>Business nominated phone<input id="mpesaNominatedNumber" inputmode="tel" placeholder="2547XXXXXXXX"></label><div class="actions" style="margin-top:8px"><button class="btn" id="registerMpesaPull">Register recovery</button><button class="btn primary" id="runMpesaPull">Recover last 48 hours</button></div><p id="mpesaPullMsg" class="settings-note" style="margin:8px 0 0"></p></div>
 <div class="grid section">
   <div class="card metric"><div class="label">M-PESA received</div><div class="value" id="mpesaTotal">KSh 0.00</div></div>
   <div class="card metric"><div class="label">Payments recorded</div><div class="value" id="mpesaCount">0</div></div>
@@ -210,9 +215,9 @@ $("clearDashboardFilter").onclick=()=>{$("dashboardFromDate").value="";$("dashbo
 $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
  if(!row.customer_name||!row.service||row.amount<0||!row.order_date)return toast("Please check the order fields.");
- let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,created_by:session.user.id}).select("id").single();
+ let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,is_paid:false,created_by:session.user.id}).select("id").single();
  const r=await q;if(r.error)return toast(r.error.message);
- const wasNew=!id; toast(wasNew?"Order saved":"Order updated");resetOrder();await loadData();
+ const wasNew=!id; toast(wasNew?"Order saved as Not paid":"Order updated");resetOrder();await loadData();
  if(wasNew&&typeof window.wireNewOrderEmail==="function"){window.wireNewOrderEmail(r.data?.id||null).catch(()=>{})}
 }
 $("expenseForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
@@ -265,7 +270,7 @@ async function loadData(){
  const loader=$("mobileLoading"); if(loader)loader.hidden=false;
  try{
  const [o,e,m,c]=await Promise.all([
-  sb.from("orders").select("id,customer_name,customer_phone,service,amount,order_date,created_by,created_at,updated_at").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
+  sb.from("orders").select("id,customer_name,customer_phone,service,amount,order_date,is_paid,created_by,created_at,updated_at").order("order_date",{ascending:false}).order("created_at",{ascending:false}),
   sb.from("expenses").select("id,category,description,amount,expense_date,created_by,created_at,updated_at").order("expense_date",{ascending:false}).order("created_at",{ascending:false}),
   sb.from("mpesa_payments").select("id,transaction_id,amount,trans_time,received_at,business_short_code,bill_ref_number,invoice_number,phone_number,first_name,middle_name,last_name,is_test").order("received_at",{ascending:false}).limit(500),
   sb.from("entry_comments").select("id,order_id,expense_id,author_id,comment,created_at,author:profiles(full_name,email)").order("created_at",{ascending:true})
@@ -286,7 +291,7 @@ async function renderDashboard(){
  }
  const from=$("dashboardFromDate").value,to=$("dashboardToDate").value;
  const inRange=date=>(!from||date>=from)&&(!to||date<=to);
- const reportOrders=orders.filter(x=>inRange(x.order_date));
+ const reportOrders=orders.filter(x=>x.is_paid===true&&inRange(x.order_date));
  const reportExpenses=expenses.filter(x=>inRange(x.expense_date));
  const report=await sb.rpc("get_owner_dashboard_report",{p_from_date:from||null,p_to_date:to||null});
  if(report.error){toast(report.error.message);return}
@@ -324,10 +329,11 @@ async function addComment(parentType,parentId){
  }
  renderOrders();renderExpenses();toast("Comment added");
 }
+window.toggleOrderPaid=async(id,paid)=>{if(!session)return;const r=await sb.from("orders").update({is_paid:paid,updated_at:new Date().toISOString()}).eq("id",id);if(r.error)return toast("Payment status not saved: "+r.error.message);toast(paid?"Order marked Paid":"Order marked Not paid");await loadData()};
 function renderOrders(){
  const q=$("orderSearch").value.toLowerCase(),from=$("orderFromDate").value,to=$("orderToDate").value;
  const a=orders.filter(x=>(!from||x.order_date>=from)&&(!to||x.order_date<=to)&&`${x.customer_name} ${x.customer_phone||""} ${x.service}`.toLowerCase().includes(q));
- $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td>${commentHtml("order",x.id)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
+ $("ordersList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Customer</th><th>Service</th><th>Amount</th><th>Payment</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.order_date)}</td><td>${esc(x.customer_name)}<br><span class="muted">${esc(x.customer_phone||"")}</span></td><td>${esc(x.service)}</td><td>${money(x.amount)}</td><td><button class="btn small ${x.is_paid===true?"primary":"pending"}" onclick="toggleOrderPaid('${x.id}',${x.is_paid===true?"false":"true"})">${x.is_paid===true?"Paid · Mark unpaid":"Not paid · Mark paid"}</button></td><td>${commentHtml("order",x.id)}</td><td class="actions">${isOwner()?`<button class="btn small" onclick="editOrder('${x.id}')">Edit</button><button class="btn small danger" onclick="delOrder('${x.id}')">Delete</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No orders found.</p>";
  if(typeof window.enhanceOrdersTable==="function")window.enhanceOrdersTable();
 }
 function renderExpenses(){
