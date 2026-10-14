@@ -115,7 +115,7 @@ body{margin:0}
 </div></div></div>
 
 <div id="mpesa" class="tab hidden">
-<div class="card section"><h3 style="margin:0 0 6px">Recover missed Till payments</h3><p class="settings-note">Production only. Register once with the M-PESA business phone nominated for transaction reports, then recover transactions from the last 48 hours.</p><label>Business nominated phone<input id="mpesaNominatedNumber" inputmode="tel" placeholder="2547XXXXXXXX"></label><div class="actions" style="margin-top:8px"><button class="btn" id="registerMpesaPull">Register recovery</button><button class="btn primary" id="runMpesaPull">Recover last 48 hours</button></div><p id="mpesaPullMsg" class="settings-note" style="margin:8px 0 0"></p></div>
+<div id="mpesaPullPanel" class="card section"><h3 style="margin:0 0 6px">Recover missed Till payments</h3><p class="settings-note">Production only. Register once with the M-PESA business phone nominated for transaction reports, then recover transactions from the last 48 hours.</p><label>Business nominated phone<input id="mpesaNominatedNumber" inputmode="tel" placeholder="2547XXXXXXXX"></label><div class="actions" style="margin-top:8px"><button class="btn" id="registerMpesaPull">Register recovery</button><button class="btn primary" id="runMpesaPull">Recover last 48 hours</button></div><p id="mpesaPullMsg" class="settings-note" style="margin:8px 0 0"></p></div>
 <div class="grid section">
   <div class="card metric"><div class="label">M-PESA received</div><div class="value" id="mpesaTotal">KSh 0.00</div></div>
   <div class="card metric"><div class="label">Payments recorded</div><div class="value" id="mpesaCount">0</div></div>
@@ -260,7 +260,7 @@ async function start(s){
  $("dashboardTab").classList.toggle("hidden",!isOwner());
  if(!isOwner()) $("ordersTab")?.click();
  $("teamTab").classList.toggle("hidden",!isOwner());
- $("ownerSettings").classList.toggle("hidden",!isOwner());
+ $("ownerSettings").classList.toggle("hidden",!isOwner());$("mpesaPullPanel").classList.toggle("hidden",!isOwner());
  setDates();renderSettings();await loadData();subscribe();await touchPresence();startPresenceHeartbeat();await refreshActiveCount();$("sync").textContent="Synced";$("sync").className="status ok";
  await importLegacy();
 }
@@ -442,6 +442,26 @@ $("uploadAvatar").onclick=uploadAvatar;$("registerMpesa").onclick=async()=>{
  $("registerMpesa").disabled=false;$("registerMpesa").textContent="Connect M-PESA";
 };
 
+
+$("registerMpesaPull").onclick=async()=>{
+ if(!isOwner())return;
+ const phone=$("mpesaNominatedNumber").value.trim();
+ if(!phone)return toast("Enter the nominated M-PESA business phone first.");
+ $("registerMpesaPull").disabled=true;$("registerMpesaPull").textContent="Registering…";$("mpesaPullMsg").textContent="Registering Pull Transactions recovery with Safaricom…";
+ const r=await sb.functions.invoke("mpesa-pull-reconcile",{body:{action:"register",nominatedNumber:phone}});
+ $("registerMpesaPull").disabled=false;$("registerMpesaPull").textContent="Register recovery";
+ if(r.error){let detail=r.data?.detail||r.data?.error||r.error.message||"Registration failed.";try{const b=r.error?.context&&await r.error.context.clone().json();if(b?.detail)detail=b.detail;else if(b?.error)detail=b.error}catch(_){}$("mpesaPullMsg").textContent=detail;return toast("Recovery registration failed");}
+ $("mpesaPullMsg").textContent=r.data?.message||"Pull Transactions recovery registered.";toast("Recovery registered");
+};
+$("runMpesaPull").onclick=async()=>{
+ if(!isOwner())return;
+ $("runMpesaPull").disabled=true;$("runMpesaPull").textContent="Recovering…";$("mpesaPullMsg").textContent="Checking the last 48 hours of Till transactions…";
+ const r=await sb.functions.invoke("mpesa-pull-reconcile",{body:{action:"query"}});
+ $("runMpesaPull").disabled=false;$("runMpesaPull").textContent="Recover last 48 hours";
+ if(r.error){let detail=r.data?.detail||r.data?.error||r.error.message||"Recovery failed.";try{const b=r.error?.context&&await r.error.context.clone().json();if(b?.detail)detail=b.detail;else if(b?.error)detail=b.error}catch(_){}$("mpesaPullMsg").textContent=detail;return toast("M-PESA recovery failed");}
+ const count=Number(r.data?.stored||0);$("mpesaPullMsg").textContent=count?`Recovered ${count} transaction record(s) from ${r.data?.window_start||"the last 48 hours"}.`:(r.data?.note||"Request accepted. If Safaricom sends results asynchronously, they will appear here when received.");
+ toast(count?`Recovered ${count} transaction(s)`:"Recovery request accepted");await loadData();
+};
 
 function subscribe(){
  if(channel)sb.removeChannel(channel);
