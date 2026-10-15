@@ -438,9 +438,17 @@ async function loadData(){
  ]);
  const coreErr=o.error||e.error||m.error||c.error;
  shoesLoadError=st.error?.message||null;
- if(coreErr){toast("Could not load business records: "+coreErr.message);$("sync").textContent="Sync error";$("sync").className="status bad";return}
- orders=o.data||[];shoes=st.error?[]:(st.data||[]);expenses=e.data||[];mpesaPayments=m.data||[];comments=c.data||[];commentsByParent={};comments.forEach(x=>{const k=x.order_id?`order:${x.order_id}`:`expense:${x.expense_id}`;(commentsByParent[k]??=[]).push(x)});renderAll();
- if(shoesLoadError){$("sync").textContent="Inventory sync error";$("sync").className="status bad";toast("Inventory could not load: "+shoesLoadError)}else{$("sync").textContent="Cloud synced";$("sync").className="status ok"}
+ // Render each section independently: failures in other tables must not block inventory.
+ orders=o.error?[]:(o.data||[]);
+ shoes=st.error?[]:(st.data||[]);
+ expenses=e.error?[]:(e.data||[]);
+ mpesaPayments=m.error?[]:(m.data||[]);
+ comments=c.error?[]:(c.data||[]);
+ commentsByParent={};comments.forEach(x=>{const k=x.order_id?`order:${x.order_id}`:`expense:${x.expense_id}`;(commentsByParent[k]??=[]).push(x)});
+ renderAll();
+ if(coreErr){toast("Some business records could not load: "+coreErr.message);$("sync").textContent="Partial sync error";$("sync").className="status bad"}
+ if(shoesLoadError){$("sync").textContent="Inventory sync error";$("sync").className="status bad";toast("Inventory could not load: "+shoesLoadError)}
+ else if(!coreErr){$("sync").textContent="Cloud synced";$("sync").className="status ok"}
  } finally { loadDataBusy=false; const loader=$("mobileLoading"); if(loader)loader.hidden=true; if(loadDataQueued){loadDataQueued=false; scheduleLoadData()} }
 }
 function scheduleLoadData(){clearTimeout(loadDataTimer);loadDataTimer=setTimeout(loadData,250)}
