@@ -561,7 +561,7 @@ function renderStockInventory(){
  $("stockPotentialMargin").textContent=money(available.reduce((n,x)=>n+Number(x.listed_price||0)-Number(x.cost_price||0),0));
  const groups=new Map();
  a.forEach(x=>{
-  const key=JSON.stringify([x.shoe_name||"",x.brand||"",x.shoe_size||"",x.color||"",Number(x.cost_price||0),Number(x.listed_price||0),x.photo_path||""]);
+  const key=JSON.stringify([x.shoe_name||"",x.brand||"",x.shoe_size||"",x.color||"",Number(x.cost_price||0),Number(x.listed_price||0)]);
   if(!groups.has(key))groups.set(key,{items:[],sample:x});
   groups.get(key).items.push(x);
  });
@@ -569,7 +569,7 @@ function renderStockInventory(){
  const visibleAvailable=a.filter(x=>x.status==="available").length;
  $("stockRecordHint").textContent=grouped.length+" product"+(grouped.length===1?"":"s")+" shown · "+visibleAvailable+" available in this view · "+available.length+" pairs in stock total";
  $("stockInventoryList").innerHTML=grouped.length?'<div class="stock-grid">'+grouped.map(g=>{
-  const x=g.sample,items=g.items,availableItems=items.filter(v=>v.status==="available"),soldItems=items.filter(v=>v.status==="sold"),av=availableItems.length>0,photo=stockPhotoUrl(x.photo_path),price=Number(x.listed_price||0),margin=price-Number(x.cost_price||0),saleId=(availableItems[0]||items[0]).id;
+  const x=g.sample,items=g.items,availableItems=items.filter(v=>v.status==="available"),soldItems=items.filter(v=>v.status==="sold"),av=availableItems.length>0,photo=stockPhotoUrl((items.find(v=>v.photo_path)||x).photo_path),price=Number(x.listed_price||0),margin=price-Number(x.cost_price||0),saleId=(availableItems[0]||items[0]).id;
   const quantityText=av?availableItems.length+" available":soldItems.length+" sold";
   return '<article class="stock-card">'+(photo?'<img class="stock-card-photo" alt="'+esc(x.shoe_name)+' product photo" src="'+esc(photo)+'">':'<div class="stock-card-photo stock-no-photo">👟<span>No photo added</span></div>')+
   '<div class="stock-card-body"><div class="row"><strong>'+esc(x.shoe_name)+'</strong><span class="pill '+(av?"approved":"pending")+'">'+esc(quantityText)+'</span></div>'+
