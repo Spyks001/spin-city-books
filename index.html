@@ -501,7 +501,41 @@ function stockPhotoUrl(path){return path?sb.storage.from("shoe-photos").getPubli
 function stockDate(x){return String(x.created_at||"").slice(0,10)}
 function resetStockForm(){$("stockId").value="";["stockName","stockBrand","stockSize","stockColor","stockCost","stockListPrice"].forEach(id=>$(id).value="");$("stockQty").value="1";$("stockQty").disabled=false;$("stockDate").value=today();$("stockPhoto").value="";$("stockPhotoPreview").innerHTML="";$("stockPhotoPreview").classList.add("hidden");$("stockFormTitle").textContent="Add new stock";$("saveStock").textContent="Save stock";$("cancelStockEdit").classList.add("hidden")}
 window.editStockItem=id=>{const x=shoes.find(v=>v.id===id);if(!x||x.status!=="available")return toast("Only available stock can be edited.");$("stockId").value=x.id;$("stockName").value=x.shoe_name||"";$("stockBrand").value=x.brand||"";$("stockSize").value=x.shoe_size||"";$("stockColor").value=x.color||"";$("stockCost").value=x.cost_price;$("stockListPrice").value=x.listed_price;$("stockQty").value="1";$("stockQty").disabled=true;$("stockDate").value=stockDate(x);$("stockPhoto").value="";$("stockFormTitle").textContent="Edit stock item";$("saveStock").textContent="Update item";$("cancelStockEdit").classList.remove("hidden");const url=stockPhotoUrl(x.photo_path);$("stockPhotoPreview").innerHTML=url?'<img alt="Current shoe photo" src="'+esc(url)+'">':"";$("stockPhotoPreview").classList.toggle("hidden",!url);$("stockFormTitle").scrollIntoView({behavior:"smooth",block:"start"})};
-async function saveStockItem(e){e.preventDefault();if(!session)return;const id=$("stockId").value,name=$("stockName").value.trim(),qty=Math.max(1,Math.floor(Number($("stockQty").value)||1)),cost=Number($("stockCost").value),listed=Number($("stockListPrice").value),date=$("stockDate").value,file=$("stockPhoto").files?.[0];if(!name||!date||cost<0||listed<0)return toast("Check the stock name, date and prices.");if(file&&(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5242880))return toast("Photo must be JPG, PNG or WebP up to 5 MB.");let photoPath=id?(shoes.find(x=>x.id===id)?.photo_path||null):null;if(file){const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg",path=session.user.id+"/"+crypto.randomUUID()+"."+ext;const up=await sb.storage.from("shoe-photos").upload(path,file,{contentType:file.type,upsert:false});if(up.error)return toast("Photo upload failed: "+up.error.message);photoPath=up.data.path}const common={shoe_name:name,brand:$("stockBrand").value.trim()||null,shoe_size:$("stockSize").value.trim()||null,color:$("stockColor").value.trim()||null,cost_price:cost,listed_price:listed,photo_path:photoPath,updated_at:new Date().toISOString()};if(id){const r=await sb.from("shoes").update({...common,created_at:new Date(date+"T12:00:00").toISOString()}).eq("id",id);if(r.error)return toast("Stock update failed: "+r.error.message);toast("Stock item updated")}else{const rows=Array.from({length:qty},()=>({...common,status:"available",created_by:session.user.id,created_at:new Date(date+"T12:00:00").toISOString(),amount_paid:0}));const r=await sb.from("shoes").insert(rows);if(r.error)return toast("Stock was not saved: "+r.error.message);toast(qty+" stock item"+(qty===1?"":"s")+" added")}resetStockForm();await loadData()}
+async function saveStockItem(e){
+ e.preventDefault();
+ const btn=$("saveStock"),originalText=btn.textContent;
+ if(!session){toast("Your session is not ready. Refresh the app and sign in again.");return}
+ if(btn.disabled)return;
+ const id=$("stockId").value,name=$("stockName").value.trim(),qty=Math.max(1,Math.floor(Number($("stockQty").value)||1)),cost=Number($("stockCost").value),listed=Number($("stockListPrice").value),date=$("stockDate").value,file=$("stockPhoto").files?.[0];
+ if(!name||!date||!Number.isFinite(cost)||!Number.isFinite(listed)||cost<0||listed<0){toast("Enter the shoe name, stock date and valid purchase/selling prices.");return}
+ if(file&&(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5242880)){toast("Photo must be JPG, PNG or WebP up to 5 MB.");return}
+ btn.disabled=true;btn.textContent="Saving stock…";
+ try{
+  let photoPath=id?(shoes.find(x=>x.id===id)?.photo_path||null):null;
+  if(file){
+   const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg",path=session.user.id+"/"+crypto.randomUUID()+"."+ext;
+   const up=await sb.storage.from("shoe-photos").upload(path,file,{contentType:file.type,upsert:false});
+   if(up.error)throw new Error("Photo upload failed: "+up.error.message);
+   photoPath=up.data.path;
+  }
+  const common={shoe_name:name,brand:$("stockBrand").value.trim()||null,shoe_size:$("stockSize").value.trim()||null,color:$("stockColor").value.trim()||null,cost_price:cost,listed_price:listed,photo_path:photoPath,updated_at:new Date().toISOString()};
+  if(id){
+   const r=await sb.from("shoes").update({...common,created_at:new Date(date+"T12:00:00").toISOString()}).eq("id",id).select("id").maybeSingle();
+   if(r.error)throw new Error("Stock update failed: "+r.error.message);
+   if(!r.data)throw new Error("No stock item was updated. Check your access, then refresh the inventory.");
+   toast("Stock item updated");
+  }else{
+   const rows=Array.from({length:qty},()=>({...common,status:"available",created_by:session.user.id,created_at:new Date(date+"T12:00:00").toISOString(),amount_paid:0}));
+   const r=await sb.from("shoes").insert(rows).select("id");
+   if(r.error)throw new Error("Stock was not saved: "+r.error.message);
+   if(!r.data||r.data.length!==qty)throw new Error("The database did not confirm all stock items. Refresh inventory before trying again.");
+   toast(qty+" stock item"+(qty===1?"":"s")+" added");
+  }
+  resetStockForm();
+  await loadData();
+ }catch(err){console.error("Inventory save failed",err);toast(err?.message||"Could not save stock. Please try again.");}
+ finally{btn.disabled=false;btn.textContent=originalText==="Saving stock…"?($( "stockId").value?"Update item":"Save stock"):originalText;}
+}
 function resetStockSale(){$("stockSellId").value="";$("stockSellName").value="";$("stockSoldPrice").value="";$("stockBuyer").value="";$("stockBuyerPhone").value="";$("stockSoldDate").value=today();$("cancelStockSale").classList.add("hidden")}
 window.prepareStockSale=id=>{const x=shoes.find(v=>v.id===id&&v.status==="available");if(!x)return toast("This item is no longer available.");$("stockSellId").value=x.id;$("stockSellName").value=[x.brand,x.shoe_name,x.shoe_size?"Size "+x.shoe_size:"",x.color].filter(Boolean).join(" · ");$("stockSoldPrice").value=x.listed_price;$("stockSoldDate").value=today();$("stockBuyer").value="";$("stockBuyerPhone").value="";$("cancelStockSale").classList.remove("hidden");$("stockSellTitle").scrollIntoView({behavior:"smooth",block:"start"})};
 async function saveStockSale(e){e.preventDefault();if(!session)return;const id=$("stockSellId").value,x=shoes.find(v=>v.id===id&&v.status==="available");if(!x)return toast("Choose an available stock item first.");const sold=Number($("stockSoldPrice").value),date=$("stockSoldDate").value;if(sold<0||!date)return toast("Enter a valid sale price and date.");const service="SHOES SALE — "+[x.brand,x.shoe_name,x.shoe_size?"Size "+x.shoe_size:"",x.color].filter(Boolean).join(" ");const order=await sb.from("orders").insert({customer_name:$("stockBuyer").value.trim()||"Walk-in customer",customer_phone:$("stockBuyerPhone").value.trim()||null,service,amount:sold,order_date:date,is_paid:false,created_by:session.user.id}).select("id").single();if(order.error)return toast("Sale order not saved: "+order.error.message);const upd=await sb.from("shoes").update({status:"sold",sold_price:sold,sold_at:date,buyer_name:$("stockBuyer").value.trim()||null,buyer_phone:$("stockBuyerPhone").value.trim()||null,sale_order_id:order.data.id,updated_at:new Date().toISOString()}).eq("id",id).eq("status","available");if(upd.error){await sb.from("orders").delete().eq("id",order.data.id);return toast("Stock status not updated: "+upd.error.message)}toast("Sale recorded. Mark it paid when money is received.");resetStockSale();await loadData()}
