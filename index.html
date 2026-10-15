@@ -163,6 +163,7 @@ body{margin:0}
 #appHeader #logout.logout-icon{width:30px;min-width:30px;height:30px;min-height:30px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-size:19px!important;line-height:1;border-radius:9px}
 @media(max-width:700px){#appHeader .head{flex-direction:row!important;align-items:center!important;gap:8px}#appHeader .head>.row{flex-direction:row!important;align-items:center!important;gap:6px}#appHeader .brand{min-width:0}#appHeader .brand h1{font-size:13px;line-height:1.2}#appHeader .brand p{font-size:9px}#appHeader #sync{font-size:9px}}
 </style>
+<style id="shoe-sales-dashboard-polish">#appView .shoes-metric{border-color:#d9d6fe;background:linear-gradient(145deg,#fff,#f7f6ff)}#appView .shoes-metric .label{color:#5b50a5}#appView #dashboard.focus-shoes .grid.section .card:not(#shoeRevenueCard){display:none!important}#appView #dashboard.focus-shoes #shoeRevenueCard{border-color:#8b83e6;box-shadow:0 0 0 2px #8b83e622}#appView .month-metrics .shoe-income{background:#f5f3ff}#appView .month-metrics .shoe-income span{color:#6255b5}</style>
 </head>
 <body>
 <header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row header-quick-actions"><span id="sync" class="status" title="Connection status">Connecting…</span><span id="role" class="pill role-icon" aria-label="Account role"></span><button class="btn small logout-icon" id="logout" type="button" title="Log out" aria-label="Log out">↪</button></div></div></header>
@@ -173,9 +174,9 @@ body{margin:0}
 <section id="appView" class="hidden">
 <div class="app-homebar"><div class="homebar-brand"><span class="homebar-mark">SC</span><div><strong>Spin City Books</strong><small>Business workspace</small></div></div><label class="workspace-select-label" for="workspaceSelect">Go to section<select id="workspaceSelect" aria-label="Choose app section"><option value="dashboard">⌂ Home dashboard</option><option value="new">＋ New entry</option><option value="orders">▤ Orders</option><option value="expenses">↗ Expenses</option><option value="mpesa">◉ M-PESA</option><option value="team" id="workspaceTeamOption" disabled>♙ Team</option><option value="settings">⚙ Settings</option><option value="audit">▥ Transactions</option></select></label></div><nav class="nav app-nav-legacy"><button data-tab="dashboard" id="dashboardTab" class="active">Dashboard</button><button data-tab="new" id="newTab">New</button><button data-tab="orders" id="ordersTab">Orders</button><button data-tab="expenses">Expenses</button><button data-tab="mpesa">M-PESA</button><button data-tab="team" id="teamTab" class="hidden">Team</button><button data-tab="settings">Settings</button></nav>
 <div id="dashboard" class="tab">
-<div class="dashboard-focus-bar"><label for="dashboardFocus">Dashboard view<select id="dashboardFocus"><option value="overview">Overview</option><option value="monthly">Monthly performance</option><option value="orders">Orders focus</option><option value="expenses">Expenses focus</option></select></label><p id="dashboardFocusHint">Your key figures and monthly performance at a glance.</p></div>
+<div class="dashboard-focus-bar"><label for="dashboardFocus">Dashboard view<select id="dashboardFocus"><option value="overview">Overview</option><option value="monthly">Monthly performance</option><option value="orders">Orders focus</option><option value="expenses">Expenses focus</option><option value="shoes">👟 Shoes sales</option></select></label><p id="dashboardFocusHint">Your key figures and monthly performance at a glance.</p></div>
 <div class="dashboard-date-corner"><details class="dashboard-date-menu"><summary title="Filter report dates">Date filter</summary><div class="dashboard-date-popover"><div class="dashboard-date-heading"><strong>Report period</strong><button class="btn small" type="button" id="clearDashboardFilter">Clear</button></div><label>From<input id="dashboardFromDate" type="date"></label><label>To<input id="dashboardToDate" type="date"></label><p>Leave blank to include all records.</p></div></details></div>
-<div class="grid section"><div class="card metric"><div class="label">Paid revenue</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Paid orders</div><div class="value" id="ordersCount">0</div></div></div>
+<div class="grid section"><div class="card metric laundry-metric"><div class="label">🧺 Laundry collected</div><div class="value" id="revenue">KSh 0.00</div></div><div class="card metric shoes-metric" id="shoeRevenueCard"><div class="label">👟 Shoes sales</div><div class="value" id="shoeRevenue">KSh 0.00</div></div><div class="card metric"><div class="label">Total expenses</div><div class="value" id="expensesTotal">KSh 0.00</div></div><div class="card metric"><div class="label">Net profit/loss</div><div class="value" id="profit">KSh 0.00</div></div><div class="card metric"><div class="label">Paid orders</div><div class="value" id="ordersCount">0</div></div></div>
 <div class="card dashboard-monthly"><div class="row"><div><h3>Monthly performance</h3><p class="muted" style="font-size:11px;margin:2px 0 0">A clear view of paid income, costs and net result.</p></div><button class="btn small" id="refresh">Refresh</button></div><div class="monthly-legend"><span><i class="legend-dot revenue-dot"></i>Paid revenue</span><span><i class="legend-dot expense-dot"></i>Expenses</span><span><i class="legend-dot net-dot"></i>Net</span></div><div id="months" class="muted">No records yet.</div><div class="monthly-note">Only orders marked Paid count as revenue.</div></div>
 </div>
 
@@ -189,7 +190,7 @@ body{margin:0}
         <input type="hidden" id="orderId">
         <label>Customer name<input id="customerName" required></label>
         <label>Customer phone<input id="customerPhone" inputmode="tel"></label>
-        <label>Service<input id="service" required placeholder="Wash & fold"></label>
+        <label>Sale type<select id="orderKind"><option value="laundry">🧺 Laundry</option><option value="shoes">👟 Shoes sales</option></select></label><label>Service / item<input id="service" required placeholder="Wash & fold"></label>
         <label>Amount charged<input id="orderAmount" type="number" min="0" step="0.01" required></label>
         <label>Date<input id="orderDate" type="date" required></label>
         <div class="actions"><button class="btn primary">Save order</button><button type="button" class="btn hidden" id="cancelOrder">Cancel edit</button></div>
@@ -290,6 +291,8 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_qwjC5XqmJWLxaW8DbMt6Cw_yXFe_2JW";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
+function isShoeSale(service){const s=String(service||"").trim().toLowerCase();return /^(shoes?\s*sale\s*[—:-]?\s*)/.test(s)||/^(shoes?|sneakers?|footwear)$/.test(s)||/\b(shoes?\s+sales?|sneakers?\s+sales?|footwear\s+sales?)\b/.test(s)}
+function cleanService(service){return String(service||"").replace(/^shoes?\s*sale\s*[—:-]?\s*/i,"").trim()}
 const today=()=>{const d=new Date();const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
 let session=null, profile=null, orders=[], expenses=[], mpesaPayments=[], comments=[], commentsByParent={}, channel=null, signup=false, presenceTimer=null, countTimer=null, inviteSetupMode=false, loadDataBusy=false, loadDataQueued=false, loadDataTimer=null;
 
@@ -332,7 +335,7 @@ $("dashboardFromDate").onchange=renderDashboard;$("dashboardToDate").onchange=re
 $("clearDashboardFilter").onclick=()=>{$("dashboardFromDate").value="";$("dashboardToDate").value="";renderDashboard()};
 
 $("orderForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
- const id=$("orderId").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:$("service").value.trim(),amount:Number($("orderAmount").value),order_date:$("orderDate").value};
+ const id=$("orderId").value;const enteredService=$("service").value.trim();const kind=$("orderKind").value;const row={customer_name:$("customerName").value.trim(),customer_phone:$("customerPhone").value.trim(),service:(kind==="shoes"?"SHOES SALE — ":"")+enteredService,amount:Number($("orderAmount").value),order_date:$("orderDate").value};
  if(!row.customer_name||!row.service||row.amount<0||!row.order_date)return toast("Please check the order fields.");
  let q=id?sb.from("orders").update({...row,updated_at:new Date().toISOString()}).eq("id",id):sb.from("orders").insert({...row,is_paid:false,created_by:session.user.id}).select("id").single();
  const r=await q;if(r.error)return toast(r.error.message);
@@ -346,7 +349,8 @@ $("expenseForm").onsubmit=async e=>{e.preventDefault();if(!session)return;
  const r=await q;if(r.error)return toast(r.error.message);toast(id?"Expense updated":"Expense saved");resetExpense();await loadData();
 }
 $("cancelOrder").onclick=resetOrder;$("cancelExpense").onclick=resetExpense;
-function resetOrder(){$("orderId").value="";$("customerName").value="";$("customerPhone").value="";$("service").value="";$("orderAmount").value="";$("orderFormTitle").textContent="Add order";$("cancelOrder").classList.add("hidden");setDates()}
+function resetOrder(){$("orderId").value="";$("customerName").value="";$("customerPhone").value="";$("service").value="";$("orderKind").value="laundry";$("service").placeholder="Wash & fold";$("orderAmount").value="";$("orderFormTitle").textContent="Add order";$("cancelOrder").classList.add("hidden");setDates()}
+$("orderKind").onchange=()=>{$("service").placeholder=$("orderKind").value==="shoes"?"e.g. Sneakers / pair":"Wash & fold"}
 function resetExpense(){$("expenseId").value="";$("expenseDescription").value="";$("expenseAmount").value="";$("expenseFormTitle").textContent="Add expense";$("cancelExpense").classList.add("hidden");setDates()}
 
 async function start(s){
@@ -385,11 +389,12 @@ const dashboardFocus=$("dashboardFocus");
 if(dashboardFocus){
  dashboardFocus.addEventListener("change",()=>{
   const d=$("dashboard"),v=dashboardFocus.value;
-  d.classList.remove("focus-monthly","focus-orders","focus-expenses");
+  d.classList.remove("focus-monthly","focus-orders","focus-expenses","focus-shoes");
   if(v==="monthly")d.classList.add("focus-monthly");
   if(v==="orders")d.classList.add("focus-orders");
   if(v==="expenses")d.classList.add("focus-expenses");
-  $("dashboardFocusHint").textContent=({overview:"Your key figures and monthly performance at a glance.",monthly:"Focused view: monthly income, expenses and net results.",orders:"Orders focus selected. Use the Orders tab to search, mark paid or edit records.",expenses:"Expenses focus selected. Use the Expenses tab to review or edit costs."})[v]||"";
+   if(v==="shoes")d.classList.add("focus-shoes");
+  $("dashboardFocusHint").textContent=({overview:"Laundry income and shoe sales are tracked separately.",monthly:"Focused view: monthly income, expenses and net results.",orders:"Orders focus selected. Use Orders to review or edit records.",expenses:"Expenses focus selected. Use Expenses to review costs.",shoes:"👟 Shoes sales only. Laundry collections are kept separate."})[v]||"";
   if(v==="orders")document.querySelector('[data-tab="orders"]').click();
   if(v==="expenses")document.querySelector('[data-tab="expenses"]').click();
  });
@@ -429,10 +434,13 @@ async function renderDashboard(){
  const reportExpenses=expenses.filter(x=>inRange(x.expense_date));
  const report=await sb.rpc("get_owner_dashboard_report",{p_from_date:from||null,p_to_date:to||null});
  if(report.error){toast(report.error.message);return}
- const rev=Number(report.data?.[0]?.revenue||0), exp=Number(report.data?.[0]?.expenses||0);
- $("revenue").textContent=money(rev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(Number(report.data?.[0]?.net||0));$("ordersCount").textContent=String(report.data?.[0]?.orders_count||0);
- const m={};reportOrders.forEach(x=>{const k=x.order_date.slice(0,7);m[k]??={r:0,e:0};m[k].r+=Number(x.amount)});reportExpenses.forEach(x=>{const k=x.expense_date.slice(0,7);m[k]??={r:0,e:0};m[k].e+=Number(x.amount)});
- const keys=Object.keys(m).sort().reverse();const maxMonthly=Math.max(1,...keys.map(k=>Math.max(m[k].r,m[k].e,Math.abs(m[k].r-m[k].e))));$("months").innerHTML=keys.length?`<div class="monthly-list">${keys.map(k=>{const net=m[k].r-m[k].e;const width=Math.max(4,Math.round(m[k].r/maxMonthly*100));return `<article class="month-card"><div class="month-top"><div><span class="month-kicker">MONTHLY SUMMARY</span><h4>${esc(new Date(k+"-02T00:00:00").toLocaleDateString("en-KE",{month:"long",year:"numeric"}))}</h4></div><span class="month-net ${net>=0?"positive":"negative"}">${net>=0?"+":"−"}${money(Math.abs(net))}</span></div><div class="month-metrics"><div><span>Paid revenue</span><strong>${money(m[k].r)}</strong></div><div><span>Expenses</span><strong>${money(m[k].e)}</strong></div></div><div class="month-bar-label"><span>Revenue vs expenses</span><span>${m[k].r?Math.round(m[k].e/m[k].r*100):m[k].e?100:0}% expense ratio</span></div><div class="month-bars"><i class="month-bar-revenue" style="width:${width}%"></i><i class="month-bar-expense" style="width:${Math.max(2,Math.round(m[k].e/maxMonthly*100))}%"></i></div></article>`}).join("")}</div>`:"<p class=\"muted\">No records found for this date range.</p>";
+ const exp=Number(report.data?.[0]?.expenses||0);
+ const shoeOrders=reportOrders.filter(x=>isShoeSale(x.service)), laundryOrders=reportOrders.filter(x=>!isShoeSale(x.service));
+ const shoeRev=shoeOrders.reduce((sum,x)=>sum+Number(x.amount||0),0), laundryRev=laundryOrders.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ $("revenue").textContent=money(laundryRev);$("shoeRevenue").textContent=money(shoeRev);$("expensesTotal").textContent=money(exp);$("profit").textContent=money(Number(report.data?.[0]?.net||0));$("ordersCount").textContent=String(report.data?.[0]?.orders_count||0);
+ const m={};reportOrders.forEach(x=>{const k=x.order_date.slice(0,7);m[k]??={r:0,s:0,e:0};if(isShoeSale(x.service))m[k].s+=Number(x.amount||0);else m[k].r+=Number(x.amount||0)});reportExpenses.forEach(x=>{const k=x.expense_date.slice(0,7);m[k]??={r:0,s:0,e:0};m[k].e+=Number(x.amount)});
+ const keys=Object.keys(m).sort().reverse();const maxMonthly=Math.max(1,...keys.map(k=>Math.max(m[k].r,m[k].s,m[k].e,Math.abs(m[k].r+m[k].s-m[k].e))));
+ $("months").innerHTML=keys.length?'<div class="monthly-list">'+keys.map(k=>{const net=m[k].r+m[k].s-m[k].e;const width=Math.max(2,Math.round(m[k].r/maxMonthly*100)),shoeWidth=Math.max(2,Math.round(m[k].s/maxMonthly*100));return '<article class="month-card"><div class="month-top"><div><span class="month-kicker">MONTHLY SUMMARY</span><h4>'+esc(new Date(k+"-02T00:00:00").toLocaleDateString("en-KE",{month:"long",year:"numeric"}))+'</h4></div><span class="month-net '+(net>=0?"positive":"negative")+'">'+(net>=0?"+":"−")+money(Math.abs(net))+'</span></div><div class="month-metrics"><div><span>🧺 Laundry collected</span><strong>'+money(m[k].r)+'</strong></div><div class="shoe-income"><span>👟 Shoes sales</span><strong>'+money(m[k].s)+'</strong></div><div><span>Expenses</span><strong>'+money(m[k].e)+'</strong></div></div><div class="month-bar-label"><span>Laundry / shoes / costs</span><span>'+((m[k].r+m[k].s)?Math.round(m[k].e/(m[k].r+m[k].s)*100):m[k].e?100:0)+'% expense ratio</span></div><div class="month-bars"><i class="month-bar-revenue" title="Laundry revenue" style="width:'+width+'%"></i><i style="display:block;height:5px;border-radius:6px;min-width:2px;background:linear-gradient(90deg,#635bce,#a5b4fc);width:'+shoeWidth+'%" title="Shoes sales"></i><i class="month-bar-expense" style="width:'+Math.max(2,Math.round(m[k].e/maxMonthly*100))+'%"></i></div></article>'}).join("")+'</div>':'<p class="muted">No records found for this date range.</p>';
 }
 function renderMpesaPayments(){
  const q=($("mpesaSearch")?.value||"").toLowerCase();
@@ -475,7 +483,7 @@ function renderExpenses(){
  const a=expenses.filter(x=>(!from||x.expense_date>=from)&&(!to||x.expense_date<=to)&&`${x.category} ${x.description||""}`.toLowerCase().includes(q));
  $("expensesList").innerHTML=a.length?`<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Comments</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category)}</td><td>${esc(x.description||"")}</td><td>${money(x.amount)}</td><td>${commentHtml("expense",x.id)}</td><td class="actions record-actions">${isOwner()?`<button class="btn small icon-action edit-action" title="Edit expense" aria-label="Edit expense" onclick="editExpense('${x.id}')">✎</button><button class="btn small danger icon-action delete-action" title="Delete expense" aria-label="Delete expense" onclick="delExpense('${x.id}')">⌫</button>`:""}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>No expenses found.</p>";
 }
-window.editOrder=id=>{const x=orders.find(v=>v.id===id);if(!x)return;$("orderId").value=x.id;$("customerName").value=x.customer_name;$("customerPhone").value=x.customer_phone||"";$("service").value=x.service;$("orderAmount").value=x.amount;$("orderDate").value=x.order_date;$("orderFormTitle").textContent="Edit order";$("cancelOrder").classList.remove("hidden");document.querySelector('[data-tab="new"]').click();setTimeout(()=>$("customerName").focus(),80);toast("Edit order opened in New tab")}
+window.editOrder=id=>{const x=orders.find(v=>v.id===id);if(!x)return;$("orderId").value=x.id;$("customerName").value=x.customer_name;$("customerPhone").value=x.customer_phone||"";$("orderKind").value=isShoeSale(x.service)?"shoes":"laundry";$("service").value=cleanService(x.service);$("service").placeholder=$("orderKind").value==="shoes"?"e.g. Sneakers / pair":"Wash & fold";$("orderAmount").value=x.amount;$("orderDate").value=x.order_date;$("orderFormTitle").textContent="Edit order";$("cancelOrder").classList.remove("hidden");document.querySelector('[data-tab="new"]').click();setTimeout(()=>$("customerName").focus(),80);toast("Edit order opened in New tab")}
 window.editExpense=id=>{const x=expenses.find(v=>v.id===id);if(!x)return;$("expenseId").value=x.id;$("expenseCategory").value=x.category;$("expenseDescription").value=x.description||"";$("expenseAmount").value=x.amount;$("expenseDate").value=x.expense_date;$("expenseFormTitle").textContent="Edit expense";$("cancelExpense").classList.remove("hidden");document.querySelector('[data-tab="new"]').click();setTimeout(()=>$("expenseCategory").focus(),80);toast("Edit expense opened in New tab")}
 window.delOrder=async id=>{if(!isOwner()||!confirm("Delete this order permanently?"))return;const r=await sb.from("orders").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Order deleted");await loadData()}}
 window.delExpense=async id=>{if(!isOwner()||!confirm("Delete this expense permanently?"))return;const r=await sb.from("expenses").delete().eq("id",id);if(r.error)toast(r.error.message);else{toast("Expense deleted");await loadData()}}
