@@ -152,9 +152,20 @@ body{margin:0}
 #appView .dashboard-date-popover input{display:block;width:100%;margin-top:3px;padding:5px 6px;font-size:10px!important;min-height:28px;border-radius:6px}
 #appView .dashboard-date-popover p{font-size:9px;color:#8090a8;margin:6px 0 0}
 </style>
+
+<style id="compact-header-account-icons">
+#appHeader .header-quick-actions{display:flex;flex-direction:row!important;align-items:center!important;justify-content:flex-end;gap:7px!important;flex-wrap:nowrap!important}
+#appHeader #sync{font-size:10px;white-space:nowrap}
+#appHeader #role.role-icon{width:30px;min-width:30px;height:30px;min-height:30px;padding:0!important;margin:0;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;font-size:0!important;line-height:1}
+#appHeader #role.role-icon:before{font-size:16px;line-height:1}
+#appHeader #role.role-owner:before{content:"♛"}
+#appHeader #role.role-staff:before{content:"♙"}
+#appHeader #logout.logout-icon{width:30px;min-width:30px;height:30px;min-height:30px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-size:19px!important;line-height:1;border-radius:9px}
+@media(max-width:700px){#appHeader .head{flex-direction:row!important;align-items:center!important;gap:8px}#appHeader .head>.row{flex-direction:row!important;align-items:center!important;gap:6px}#appHeader .brand{min-width:0}#appHeader .brand h1{font-size:13px;line-height:1.2}#appHeader .brand p{font-size:9px}#appHeader #sync{font-size:9px}}
+</style>
 </head>
 <body>
-<header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row"><span id="sync" class="status">Connecting…</span><span id="role" class="pill"></span><button class="btn small" id="logout">Log out</button></div></div></header>
+<header id="appHeader" class="hidden"><div class="head"><div class="brand"><h1>Spin City Laundry Services</h1><p>0712 250 866 · Cloud bookkeeping</p></div><div class="row header-quick-actions"><span id="sync" class="status" title="Connection status">Connecting…</span><span id="role" class="pill role-icon" aria-label="Account role"></span><button class="btn small logout-icon" id="logout" type="button" title="Log out" aria-label="Log out">↪</button></div></div></header>
 
 <main class="wrap">
 <section id="loginView"><div class="login-stage"><div class="login-left"><img class="login-logo" alt="Spin City Laundry Services" src="assets/spin-city-logo.webp"><h2>Welcome to <span>Spin City Books</span></h2><p class="lead"><b>Smart Bookkeeping for Your Laundry Business</b><br>Track income and expenses, manage your customers, and keep your business running smoothly — all in one place.</p><div class="features"><div class="feature"><div class="ico">▥</div><b>Track Finances</b><span>Record income, expenses and profits.</span></div><div class="feature"><div class="ico">♟</div><b>Manage Customers</b><span>Keep customer records and history.</span></div><div class="feature"><div class="ico">▤</div><b>View Reports</b><span>Get clear insights with simple reports.</span></div><div class="feature"><div class="ico">☁</div><b>Access Anywhere</b><span>Use on any device, anytime.</span></div></div><div class="slogan">Clean Clothes &nbsp;•&nbsp; Happy Customers &nbsp;•&nbsp; Better Business</div></div><div class="login-overlay"><h2>🔒 &nbsp;Log In to Your Account</h2><p>Access your business records and manage your team.</p><div class="nav"><button id="loginMode" class="active">Sign in</button><button id="signupMode">Create account</button></div><form id="authForm" class="auth-form"><label><input class="auth-input" id="email" type="email" placeholder="Email address" required autocomplete="email"></label><label><input class="auth-input" id="password" type="password" minlength="6" placeholder="Password" required autocomplete="current-password"></label><label id="nameWrap" class="hidden"><input class="auth-input" id="fullName" type="text" placeholder="Full name"></label><div class="login-links"><span>☐ Remember me</span><a id="forgot">Forgot password?</a></div><button class="btn primary login-main-btn" id="authBtn">Log in →</button></form><div id="inviteSetup" class="invite-setup hidden"><h3>🎉 Finish your staff account</h3><p class="note">Your invitation has already verified this email. Set your password and name below — you will go straight into Spin City Books after this.</p><label>Email<input class="auth-input" id="inviteSetupEmail" type="email" readonly></label><label>Full name<input class="auth-input" id="inviteFullName" type="text" placeholder="Your full name" autocomplete="name" required></label><label>New password<input class="auth-input" id="invitePassword" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" required></label><label>Confirm password<input class="auth-input" id="invitePassword2" type="password" minlength="6" placeholder="Repeat your password" autocomplete="new-password" required></label><button class="btn primary login-main-btn" id="finishInvite">Finish sign-up →</button><p id="inviteSetupMsg"></p></div><div id="signupExtras"><div class="signup-divider">New to Spin City Books?</div><button class="btn signup-btn" id="createAccountBtn">Create Account</button></div><p id="authMsg"></p><div class="secure">🔒 Secure · Encrypted · Your Data, Your Control</div></div></div></section>
@@ -364,7 +375,7 @@ async function start(s){
  }
  $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("appHeader").classList.remove("hidden");
  $("sync").textContent="Syncing…";
- $("role").textContent=profile.role.toUpperCase();
+ $("role").textContent=profile.role.toUpperCase();$("role").classList.toggle("role-owner",isOwner());$("role").classList.toggle("role-staff",!isOwner());$("role").title=profile.role.toUpperCase();
  $("dashboardTab").classList.toggle("hidden",!isOwner());
  if(!isOwner()) $("ordersTab")?.click();
  $("teamTab").classList.toggle("hidden",!isOwner());$("workspaceTeamOption").disabled=!isOwner();
