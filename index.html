@@ -456,11 +456,12 @@ async function loadData(){
 function scheduleLoadData(){clearTimeout(loadDataTimer);loadDataTimer=setTimeout(loadData,250)}
 function renderAll(){renderDashboard();renderOrders();renderStockInventory();renderShoeSales();renderExpenses();renderMpesaPayments()}
 async function renderDashboard(){
- if(!isOwner() || $("dashboard")?.classList.contains("hidden"))return;
  if(!isOwner()){
-  $("dashboard").innerHTML='<div class="card section"><h3>Owner-only report</h3><p class="muted">The total business breakdown is available only to the business owner.</p></div>';
+  const dashboard=$("dashboard");
+  if(dashboard&&!dashboard.dataset.ownerLocked){dashboard.innerHTML='<div class="card section"><h3>Owner-only monthly breakdown</h3><p class="muted">Business totals, monthly performance and stock costs are available only to the business owner.</p></div>';dashboard.dataset.ownerLocked="true";}
   return;
  }
+ if($("dashboard")?.classList.contains("hidden"))return;
  const from=$("dashboardFromDate").value,to=$("dashboardToDate").value;
  const inRange=date=>(!from||date>=from)&&(!to||date<=to);
  const reportOrders=orders.filter(x=>x.is_paid===true&&inRange(x.order_date));
